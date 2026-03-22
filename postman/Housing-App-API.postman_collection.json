@@ -1,0 +1,546 @@
+{
+  "info": {
+    "_postman_id": "f2b63f65-6e6c-4d1b-a8ff-2a72d7a2d5f4",
+    "name": "Habitra Homes API",
+    "description": "Beginner-friendly collection for Habitra Homes backend APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "tenant_id",
+      "value": ""
+    },
+    {
+      "key": "landlord_id",
+      "value": ""
+    },
+    {
+      "key": "property_id",
+      "value": ""
+    },
+    {
+      "key": "unit_type_id",
+      "value": ""
+    },
+    {
+      "key": "unit_id",
+      "value": ""
+    },
+    {
+      "key": "booking_id",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Root Check",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Landlord",
+      "item": [
+        {
+          "name": "Register Landlord",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"John Landlord\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+254700000001\",\n  \"city\": \"Mombasa\"\n}"
+            },
+            "url": "{{base_url}}/api/landlord/register"
+          }
+        },
+        {
+          "name": "Landlord Bookings",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/landlord/{{landlord_id}}/bookings"
+          }
+        },
+        {
+          "name": "Landlord Bookings (Approved)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/landlord/{{landlord_id}}/bookings?booking_status=approved"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tenant",
+      "item": [
+        {
+          "name": "Register Tenant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Hussein Riaz Shahid\",\n  \"email\": \"hussein@test.com\",\n  \"phone\": \"0712345678\",\n  \"city\": \"Mombasa\"\n}"
+            },
+            "url": "{{base_url}}/api/tenant/register"
+          }
+        },
+        {
+          "name": "Register Tenant With Docs",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "full_name",
+                  "value": "Photo Tenant",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "phototenant1@housingapp.ke",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+254711555333",
+                  "type": "text"
+                },
+                {
+                  "key": "city",
+                  "value": "Mombasa",
+                  "type": "text"
+                },
+                {
+                  "key": "id_front",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "id_back",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/tenant/register-with-docs"
+          }
+        },
+        {
+          "name": "Tenant Bookings",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/tenant/{{tenant_id}}/bookings"
+          }
+        },
+        {
+          "name": "Add Favorite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenant_id\": \"{{tenant_id}}\",\n  \"property_id\": \"{{property_id}}\"\n}"
+            },
+            "url": "{{base_url}}/api/tenant/favorites/add"
+          }
+        },
+        {
+          "name": "List Favorites",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/tenant/{{tenant_id}}/favorites"
+          }
+        },
+        {
+          "name": "Remove Favorite",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenant_id\": \"{{tenant_id}}\",\n  \"property_id\": \"{{property_id}}\"\n}"
+            },
+            "url": "{{base_url}}/api/tenant/favorites/remove"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Property",
+      "item": [
+        {
+          "name": "Create Property",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"owner_id\": \"{{landlord_id}}\",\n  \"title\": \"2 Bedroom Apartment\",\n  \"description\": \"Modern apartment in Nyali\",\n  \"country\": \"Kenya\",\n  \"state\": \"Mombasa County\",\n  \"city\": \"Mombasa\",\n  \"area\": \"Nyali\",\n  \"neighborhood\": \"Links Road\",\n  \"address\": \"Nyali, Links Road\",\n  \"property_type\": \"apartment\",\n  \"property_class\": \"medium_price_apartment\",\n  \"total_units\": 10\n}"
+            },
+            "url": "{{base_url}}/api/property/create"
+          }
+        },
+        {
+          "name": "Create Unit Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"property_id\": \"{{property_id}}\",\n  \"name\": \"2 Bedroom Apartment\",\n  \"price\": 45000,\n  \"size_sqm\": 80,\n  \"total_units\": 1\n}"
+            },
+            "url": "{{base_url}}/api/unit-type/create"
+          }
+        },
+        {
+          "name": "Create Unit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"property_id\": \"{{property_id}}\",\n  \"unit_type_id\": \"{{unit_type_id}}\",\n  \"unit_number\": \"A-101\",\n  \"floor\": 1\n}"
+            },
+            "url": "{{base_url}}/api/unit/create"
+          }
+        },
+        {
+          "name": "List Verified Properties",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/properties"
+          }
+        },
+        {
+          "name": "List Verified Properties (Mombasa)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/properties?city=Mombasa"
+          }
+        },
+        {
+          "name": "Map Properties",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/properties/map?city=Mombasa"
+          }
+        },
+        {
+          "name": "Map Properties (Red)",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/properties/map?city=Mombasa&map_color=red"
+          }
+        },
+        {
+          "name": "Property Details",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/property/{{property_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Booking & Rental",
+      "item": [
+        {
+          "name": "Create Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenant_id\": \"{{tenant_id}}\",\n  \"property_id\": \"{{property_id}}\",\n  \"unit_type_id\": \"{{unit_type_id}}\",\n  \"unit_id\": \"{{unit_id}}\"\n}"
+            },
+            "url": "{{base_url}}/api/booking/create"
+          }
+        },
+        {
+          "name": "Respond To Booking (Approve)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": \"{{booking_id}}\",\n  \"landlord_id\": \"{{landlord_id}}\",\n  \"action\": \"approved\"\n}"
+            },
+            "url": "{{base_url}}/api/booking/respond"
+          }
+        },
+        {
+          "name": "Respond To Booking (Decline)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"booking_id\": \"{{booking_id}}\",\n  \"landlord_id\": \"{{landlord_id}}\",\n  \"action\": \"declined\"\n}"
+            },
+            "url": "{{base_url}}/api/booking/respond"
+          }
+        },
+        {
+          "name": "Create Rental",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenant_id\": \"{{tenant_id}}\",\n  \"property_id\": \"{{property_id}}\",\n  \"unit_id\": \"{{unit_id}}\",\n  \"start_date\": \"2026-03-10\"\n}"
+            },
+            "url": "{{base_url}}/api/rental/create"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Verify Property",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"property_id\": \"{{property_id}}\",\n  \"notes\": \"Approved by admin\"\n}"
+            },
+            "url": "{{base_url}}/api/admin/verify-property"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload Unit Photos",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "unit_type_id",
+                  "value": "{{unit_type_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "photos",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/unit-photos"
+          }
+        },
+        {
+          "name": "Upload Property Photos",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "property_id",
+                  "value": "{{property_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "photos",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/property-photos"
+          }
+        },
+        {
+          "name": "Upload Landlord Verification Doc",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "landlord_id",
+                  "value": "{{landlord_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "document_type",
+                  "value": "national_id",
+                  "type": "text"
+                },
+                {
+                  "key": "document",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/landlord-verification-doc"
+          }
+        },
+        {
+          "name": "Upload Tenant Document",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "tenant_id",
+                  "value": "{{tenant_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "document_type",
+                  "value": "passport",
+                  "type": "text"
+                },
+                {
+                  "key": "document",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/tenant-document"
+          }
+        },
+        {
+          "name": "Upload Property Document",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "property_id",
+                  "value": "{{property_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "document_type",
+                  "value": "title_deed",
+                  "type": "text"
+                },
+                {
+                  "key": "document",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/property-document"
+          }
+        },
+        {
+          "name": "Upload Unit Type Floor Plan",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "unit_type_id",
+                  "value": "{{unit_type_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "floor_plan",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/upload/unit-type-floor-plan"
+          }
+        }
+      ]
+    }
+  ]
+}

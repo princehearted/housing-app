@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Habitra | Tenant Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .shell { padding: 24px; max-width: 1200px; margin: 0 auto; }
+    
+    .search-section { background: var(--surface); padding: 32px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 32px; }
+    .search-input-wrap { display: flex; gap: 12px; margin-bottom: 24px; }
+    .search-input-wrap input { flex: 1; padding: 16px 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 1rem; }
+
+    .cat-scroll { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+      gap: 10px; 
+      margin-top: 16px;
+    }
+    .cat-pill { 
+      text-align: center;
+      padding: 12px 10px; 
+      border-radius: 12px; 
+      border: 1px solid var(--border); 
+      background: var(--surface); 
+      cursor: pointer; 
+      font-weight: 600; 
+      font-size: 0.85rem;
+      color: var(--muted); 
+      transition: 0.2s;
+    }
+    .cat-pill.active { background: var(--accent); border-color: var(--accent); color: white; box-shadow: 0 4px 12px rgba(14, 165, 164, 0.2); }
+
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+    .prop-card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; transition: 0.2s; cursor: pointer; position: relative; }
+    .prop-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.05); }
+    .prop-card .img { height: 200px; background: #eee; background-size: cover; background-position: center; }
+    .prop-card .body { padding: 20px; }
+    .prop-card h4 { font-family: 'Sora', sans-serif; font-size: 1.1rem; margin-bottom: 4px; }
+    .prop-card .loc { color: var(--muted); font-size: 0.9rem; margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+    .prop-card .meta { display: flex; gap: 8px; margin-bottom: 16px; }
+    .prop-card .badge { padding: 4px 10px; border-radius: 8px; background: #f1f5f9; font-size: 0.7rem; font-weight: 700; color: #475569; text-transform: uppercase; }
+    .prop-card .price-info { font-size: 0.9rem; font-weight: 600; color: var(--accent); line-height: 1.4; }
+
+    .interest-item { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; margin-bottom: 16px; }
+    .status-tag { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .status-tag.booked { background: #fef3c7; color: #92400e; }
+    .status-tag.completed { background: #dcfce7; color: #166534; }
+    .status-tag.cancelled { background: #fee2e2; color: #991b1b; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-dot"></span><h1>Habitra</h1></div>
+    <nav class="toplinks">
+      <a href="#" class="active" onclick="showTab('browse')">Browse Properties</a>
+      <a href="#" onclick="showTab('my-bookings')">My Bookings</a>
+      <a href="settings.html">Settings</a>
+      <button onclick="logout()" class="btn-primary" style="padding: 8px 20px;">Logout</button>
+    </nav>
+  </header>
+
+  <main class="shell">
+    <!-- Browse Tab -->
+    <div id="tab-browse" class="tab-content">
+      <div class="search-section">
+        <h2 style="margin-bottom: 20px; font-family: 'Sora', sans-serif;">Find Your Next Home</h2>
+        <div class="search-input-wrap">
+          <input type="text" id="search-city" placeholder="Search by city, neighborhood, price or size (e.g. Nyali, 25000, 45sqm)">
+          <button class="btn-primary" onclick="loadProperties()" style="padding: 0 32px;">Search</button>
+        </div>
+        
+        <div class="cat-scroll" id="cat-scroll">
+          <!-- Categories populated by JS -->
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h3 id="results-label">Verified Listings</h3>
+        <span id="results-count" style="color:var(--muted); font-weight:600;">0 properties</span>
+      </div>
+
+      <div class="results-grid" id="prop-grid">
+        <!-- Results populated by JS -->
+      </div>
+    </div>
+
+    <!-- My Bookings Tab -->
+    <div id="tab-my-bookings" class="tab-content" style="display:none;">
+      <h2 style="margin-bottom: 8px; font-family: 'Sora', sans-serif;">My Inquiries</h2>
+      <p style="color:var(--muted); margin-bottom:32px;">Track the status of your property interests.</p>
+      <div id="bookings-list">
+        <!-- Bookings populated by JS -->
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script>
+    const user = API.getUser();
+    if (!API.getToken() || !user?.tenant_id) window.location.href = 'login.html';
+
+    const categories = [
+      { id: '', label: 'All Types' },
+      { id: 'apartment', label: 'Apartments' },
+      { id: 'mansion', label: 'Mansions' },
+      { id: 'bedsitter', label: 'Bedsitters' },
+      { id: 'single_room', label: 'Single Rooms' },
+      { id: 'paying_guest', label: 'Paying Guest' },
+      { id: 'hostel', label: 'Hostels' },
+      { id: 'shop', label: 'Shop Units' },
+      { id: 'warehouse', label: 'Warehouses' },
+      { id: 'godown', label: 'Godowns' }
+    ];
+
+    let activeCategory = localStorage.getItem('filter_category') || '';
+    localStorage.removeItem('filter_category');
+
+    // Auto-show browse tab on load
+    window.onload = () => {
+      showTab('browse');
+      renderCategories();
+      loadProperties();
+    };
+
+    function logout() { API.clearToken(); API.clearUser(); window.location.href = 'login.html'; }
+
+    function showTab(id) {
+      document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+      document.querySelectorAll('.toplinks a').forEach(a => a.classList.remove('active'));
+      
+      const targetTab = document.getElementById('tab-' + id);
+      if (targetTab) targetTab.style.display = 'block';
+      
+      // Find the link that corresponds to this tab and activate it
+      document.querySelectorAll('.toplinks a').forEach(a => {
+        if (a.getAttribute('onclick') && a.getAttribute('onclick').includes(`'${id}'`)) {
+          a.classList.add('active');
+        }
+      });
+
+      if (id === 'my-bookings') loadBookings();
+    }
+
+    function renderCategories() {
+      document.getElementById('cat-scroll').innerHTML = categories.map(c => `
+        <div class="cat-pill ${activeCategory === c.id ? 'active' : ''}" onclick="filterCat('${c.id}')">
+          ${c.label}
+        </div>
+      `).join('');
+    }
+
+    function filterCat(id) {
+      activeCategory = id;
+      renderCategories();
+      loadProperties();
+    }
+
+    async function loadProperties() {
+      const grid = document.getElementById('prop-grid');
+      grid.innerHTML = '<p class="empty">Searching verified properties...</p>';
+      
+      try {
+        const searchVal = document.getElementById('search-city').value;
+        const params = {};
+        if (activeCategory) params.property_type = activeCategory;
+
+        if (searchVal) {
+          // Simple parsing for numbers (price) and sqm/sqft (size)
+          const words = searchVal.split(/[,\s]+/);
+          let cityParts = [];
+          
+          words.forEach(w => {
+            const num = parseInt(w);
+            if (!isNaN(num)) {
+              if (w.toLowerCase().includes('sqm') || w.toLowerCase().includes('sqft') || num < 2000) {
+                params.max_size = num; // Assume small numbers or sqm are size
+              } else {
+                params.max_price = num; // Assume large numbers are price
+              }
+            } else {
+              cityParts.push(w);
+            }
+          });
+          
+          if (cityParts.length) params.city = cityParts.join(' ');
+        }
+
+        const data = await API.properties.listVerified(params);
+        const props = data.properties || [];
+        
+        document.getElementById('results-count').textContent = `${props.length} properties`;
+        
+        if (props.length === 0) {
+          grid.innerHTML = '<p class="empty">No properties found. Try changing your filters.</p>';
+          return;
+        }
+
+        grid.innerHTML = props.map(p => `
+          <div class="prop-card" onclick="window.location.href='property.html?id=${p.id}'">
+            <div class="img" style="background-image: url('${p.primary_photo_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80'}')"></div>
+            <div class="body">
+              <h4>${p.title}</h4>
+              <div class="loc">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                ${p.area}, ${p.city}
+              </div>
+              <div class="meta">
+                <span class="badge">${p.property_type}</span>
+                <span class="badge">${p.property_class.replace(/_/g, ' ')}</span>
+                <span class="badge" style="background:rgba(14, 165, 164, 0.1); color:var(--accent);">${p.total_units || 0} Rooms/Spaces Available</span>
+              </div>
+              <div class="price-info">Click property to view prices and unit details.</div>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        grid.innerHTML = '<p class="empty">Error connecting to server. Please try again.</p>';
+      }
+    }
+
+    async function loadBookings() {
+      const list = document.getElementById('bookings-list');
+      list.innerHTML = '<p class="empty">Loading your inquiries...</p>';
+      try {
+        const data = await API.tenant.getInterests();
+        const items = data.interests || [];
+        if (items.length === 0) {
+          list.innerHTML = '<p class="empty">You haven\'t made any property inquiries yet.</p>';
+          return;
+        }
+        list.innerHTML = items.map(i => `
+          <div class="interest-item">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+              <div>
+                <h4 style="margin-bottom:4px;">${i.property_title}</h4>
+                <p style="font-size:0.9rem; color:var(--muted);">${i.unit_type_name}</p>
+              </div>
+              <span class="status-tag ${i.status}">${i.status}</span>
+            </div>
+            <div style="background:#f8fafc; padding:16px; border-radius:12px; margin-bottom:16px;">
+              <p style="font-size:0.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; margin-bottom:4px;">Your Message:</p>
+              <p style="font-size:0.95rem;">"${i.tenant_message || 'No message provided.'}"</p>
+            </div>
+            ${i.landlord_response ? `
+              <div style="border-left:4px solid var(--accent); padding-left:16px;">
+                <p style="font-size:0.8rem; font-weight:700; color:var(--accent); text-transform:uppercase; margin-bottom:4px;">Landlord Response:</p>
+                <p style="font-size:0.95rem; font-weight:500;">${i.landlord_response}</p>
+              </div>
+            ` : `<p style="font-size:0.85rem; color:var(--muted);">Waiting for landlord to respond...</p>`}
+          </div>
+        `).join('');
+      } catch (e) {
+        list.innerHTML = '<p class="empty">Failed to load inquiries.</p>';
+      }
+    }
+
+    renderCategories();
+    showTab('browse');
+    loadProperties();
+  </script>
+</body>
+</html>

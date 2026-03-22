@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Habitra | Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Outfit', sans-serif; background: #ffffff; color: #000000; min-height: 100vh; }
+    body.dark { background: #000000; color: #ffffff; }
+    body.dark a, body.dark h1, body.dark h2, body.dark h3, body.dark h4, body.dark p, body.dark span, body.dark label { color: #ffffff !important; }
+    body.dark input, body.dark select { background: #1a1a1a !important; color: #ffffff !important; border-color: #333 !important; }
+    body.dark header, body.dark .card, body.dark .tab-cont, body.dark .stat, body.dark .table-wrap { background: #111 !important; border-color: #333 !important; }
+    body.dark table { border-color: #333 !important; }
+    body.dark th, body.dark td { border-color: #333 !important; }
+
+    header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+    body.dark header { background: #111; border-color: #333; }
+    .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #0ea5a4, #14b8a6); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 18px; height: 18px; color: white; }
+    .logo span { font-family: 'Sora', sans-serif; font-size: 1.3rem; font-weight: 700; }
+    .nav-right { display: flex; gap: 12px; align-items: center; }
+    .user-name { font-weight: 600; font-size: 0.9rem; }
+    .role-badge { background: #0ea5a4; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; }
+    body.dark .role-badge { background: #0ea5a4; }
+    .logout-btn { padding: 6px 14px; border: 1px solid #e2e8f0; border-radius: 18px; background: transparent; cursor: pointer; font-size: 0.85rem; color: #000; }
+    body.dark .logout-btn { border-color: #444; color: #fff; }
+    .theme-btn { background: none; border: none; cursor: pointer; padding: 6px; }
+    .theme-btn svg { width: 22px; height: 22px; stroke: #000; }
+    body.dark .theme-btn svg { stroke: #fff; }
+
+    .main { padding: 16px; max-width: 1200px; margin: 0 auto; }
+    .dash-title { font-family: 'Sora', sans-serif; margin-bottom: 6px; }
+    .dash-sub { color: #666; font-size: 0.9rem; margin-bottom: 16px; }
+    body.dark .dash-sub { color: #aaa; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; text-align: center; }
+    body.dark .stat { background: #1a1a1a; }
+    .stat h3 { font-size: 1.8rem; color: #0ea5a4; }
+    .stat p { font-size: 0.85rem; color: #666; }
+    body.dark .stat p { color: #aaa; }
+
+    .tabs { display: flex; background: #fff; border-radius: 14px; padding: 6px; margin-bottom: 16px; border: 1px solid #e2e8f0; gap: 6px; flex-wrap: wrap; }
+    body.dark .tabs { background: #1a1a1a; border-color: #333; }
+    .tab { flex: 1; padding: 12px; border: none; border-radius: 10px; background: transparent; font-weight: 600; cursor: pointer; font-size: 0.9rem; color: #666; min-width: 120px; }
+    .tab.active { background: #0ea5a4; color: white; }
+
+    .tab-cont { display: none; }
+    .tab-cont.active { display: block; }
+
+    .table-wrap { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; overflow: hidden; margin-bottom: 20px; }
+    body.dark .table-wrap { background: #111; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+    body.dark th, body.dark td { border-color: #333; }
+    th { background: #f8fafc; font-weight: 600; }
+    body.dark th { background: #1a1a1a; }
+
+    .status-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 500; }
+    .status-badge.pending { background: #fef3c7; color: #92400e; }
+    .status-badge.verified { background: #d1fae5; color: #065f46; }
+    .status-badge.rejected { background: #fee2e2; color: #991b1b; }
+
+    .action-btn { padding: 6px 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.8rem; margin-right: 6px; }
+    .action-btn.approve { background: #22c55e; color: white; }
+    .action-btn.reject { background: #ef4444; color: white; }
+    .action-btn.view { background: #3b82f6; color: white; }
+
+    .empty { text-align: center; padding: 30px; color: #666; }
+    body.dark .empty { color: #888; }
+
+    .master-notice { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 0.9rem; color: #92400e; }
+    body.dark .master-notice { background: #332700; border-color: #854d0e; color: #fbbf24; }
+
+    @media (max-width: 768px) {
+      .stats { grid-template-columns: 1fr; }
+      .table-wrap { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="services.html" class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
+      <span>Habitra</span>
+    </a>
+    <div class="nav-right">
+      <button class="theme-btn" onclick="toggleTheme()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg>
+      </button>
+      <span class="user-name" id="user-name">Admin</span>
+      <span class="role-badge" id="user-role">Admin</span>
+      <button class="logout-btn" id="logout-btn">Logout</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <h2 class="dash-title">Admin Dashboard</h2>
+    <p class="dash-sub">Manage verifications and property listings</p>
+
+    <div id="master-notice" class="master-notice" style="display:none;">
+      Master Admin: You can override any decision made by other admins.
+    </div>
+
+    <div class="stats">
+      <div class="stat"><h3 id="stat-landlords">0</h3><p>Landlords Pending</p></div>
+      <div class="stat"><h3 id="stat-tenants">0</h3><p>Tenants Pending</p></div>
+      <div class="stat"><h3 id="stat-properties">0</h3><p>Properties Pending</p></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="queue">Verification Queue</button>
+    </div>
+
+    <!-- Verification Queue -->
+      <div class="table-wrap">
+        <h3 style="padding:16px 16px 0;">Landlord Verifications</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>City</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="landlords-table">
+            <tr><td colspan="6" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap">
+        <h3 style="padding:16px 16px 0;">Tenant Verifications</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>City</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tenants-table">
+            <tr><td colspan="6" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-wrap">
+        <h3 style="padding:16px 16px 0;">Property Verifications</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Property</th>
+              <th>Landlord</th>
+              <th>Location</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="properties-table">
+            <tr><td colspan="6" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Manage Admins (Master Admin Only) -->
+    <div class="tab-cont" id="tab-admins">
+      <div class="table-wrap">
+        <h3 style="padding:16px 16px 0;">Admin Users</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admins-table">
+            <tr><td colspan="5" class="empty">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    const user = API.getUser();
+    const token = API.getToken();
+
+    if (!token || !user || !user.admin_user_id) {
+      window.location.href = 'login.html';
+    }
+    
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+
+    const isMasterAdmin = user.admin_role === 'master_admin';
+
+    document.getElementById('user-name').textContent = user.full_name || 'Admin';
+    document.getElementById('user-role').textContent = isMasterAdmin ? 'Master' : 'Admin';
+    
+    if (isMasterAdmin) {
+      document.getElementById('master-notice').style.display = 'block';
+    }
+
+    document.getElementById('logout-btn').onclick = () => {
+      API.clearToken();
+      API.clearUser();
+      window.location.href = 'login.html';
+    };
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-cont').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        const contentId = 'tab-' + btn.dataset.tab;
+        const content = document.getElementById(contentId);
+        if (content) content.classList.add('active');
+        
+        if (btn.dataset.tab === 'admins') loadAdmins();
+      };
+    });
+
+    function formatStatus(status) {
+      return `<span class="status-badge ${status}">${status || 'pending'}</span>`;
+    }
+
+    async function loadQueue() {
+      try {
+        const data = await API.admin.getQueue();
+        const queue = data.queue || {};
+
+        const landlords = queue.pending_landlord_documents || [];
+        const tenants = queue.pending_tenants || [];
+        const properties = queue.pending_properties || [];
+
+        document.getElementById('stat-landlords').textContent = landlords.length;
+        document.getElementById('stat-tenants').textContent = tenants.length;
+        document.getElementById('stat-properties').textContent = properties.length;
+
+        // Landlords
+        document.getElementById('landlords-table').innerHTML = landlords.length ? landlords.map(l => {
+          const info = l.landlords || {};
+          return `
+            <tr>
+              <td>${info.full_name || '-'}</td>
+              <td>${info.email || '-'}</td>
+              <td>${l.document_type || '-'}</td>
+              <td>${info.city || '-'}</td>
+              <td>${formatStatus(l.verification_status)}</td>
+              <td>
+                <button class="action-btn view" onclick="window.open('${l.document_url}', '_blank')">View Doc</button>
+                <button class="action-btn approve" onclick="handleAction('approve-landlord', '${l.id}')">Approve</button>
+                <button class="action-btn reject" onclick="handleAction('reject-landlord', '${l.id}')">Reject</button>
+              </td>
+            </tr>
+          `;
+        }).join('') : '<tr><td colspan="6" class="empty">No pending landlord verifications</td></tr>';
+
+        // Tenants
+        document.getElementById('tenants-table').innerHTML = tenants.length ? tenants.map(t => `
+          <tr>
+            <td>${t.full_name || '-'}</td>
+            <td>${t.email || '-'}</td>
+            <td>${t.phone || '-'}</td>
+            <td>${t.city || '-'}</td>
+            <td>${formatStatus(t.is_active ? 'verified' : 'pending')}</td>
+            <td>
+              <button class="action-btn approve" onclick="handleAction('verify-tenant', '${t.tenant_id}')">Verify</button>
+            </td>
+          </tr>
+        `).join('') : '<tr><td colspan="6" class="empty">No pending tenant verifications</td></tr>';
+
+        // Properties
+        document.getElementById('properties-table').innerHTML = properties.length ? properties.map(p => `
+          <tr>
+            <td>${p.title || '-'}</td>
+            <td>${p.owner_id || '-'}</td>
+            <td>${p.city || '-'}</td>
+            <td>${p.verification_status || '-'}</td>
+            <td>${formatStatus(p.verification_status)}</td>
+            <td>
+              <button class="action-btn approve" onclick="handleAction('verify-property', '${p.id}')">Verify</button>
+            </td>
+          </tr>
+        `).join('') : '<tr><td colspan="6" class="empty">No pending property verifications</td></tr>';
+
+      } catch(e) { 
+        console.error(e);
+        document.getElementById('landlords-table').innerHTML = '<tr><td colspan="6" class="empty">Failed to load</td></tr>';
+      }
+    }
+
+    async function loadAdmins() {
+      if (!isMasterAdmin) return;
+      try {
+        const data = await API.request('/admin/admins'); // We'll add this to API later if needed
+        const admins = data.admins || [];
+        
+        document.getElementById('admins-table').innerHTML = admins.length ? admins.map(a => `
+          <tr>
+            <td>${a.full_name || '-'}</td>
+            <td>${a.email || '-'}</td>
+            <td>${formatStatus(a.role)}</td>
+            <td>${formatStatus(a.is_active ? 'verified' : 'rejected')}</td>
+            <td>
+              <button class="action-btn ${a.is_active ? 'reject' : 'approve'}" onclick="handleAdminAction('${a.id}', ${a.is_active})">
+                ${a.is_active ? 'Deactivate' : 'Activate'}
+              </button>
+            </td>
+          </tr>
+        `).join('') : '<tr><td colspan="5" class="empty">No admin users</td></tr>';
+      } catch(e) {
+        document.getElementById('admins-table').innerHTML = '<tr><td colspan="5" class="empty">Failed to load admins</td></tr>';
+      }
+    }
+
+    window.handleAction = async function(action, id) {
+      const notes = prompt('Enter notes for this action (optional):') || 'Action taken from dashboard';
+      
+      try {
+        if (action === 'verify-tenant') {
+          await API.admin.verifyTenant(id, 'verified', notes);
+        } else if (action === 'verify-property') {
+          await API.admin.verifyProperty(id, 'verified', notes);
+        } else if (action === 'approve-landlord') {
+          await API.admin.reviewLandlordDoc(id, 'verified', notes);
+        } else if (action === 'reject-landlord') {
+          await API.admin.reviewLandlordDoc(id, 'rejected', notes);
+        } else if (action.startsWith('override-') && isMasterAdmin) {
+          const decision = action === 'override-property' ? 'verified' : 'rejected';
+          await API.admin.masterOverrideProperty(id, decision, notes);
+        }
+
+        alert('Action completed!');
+        loadQueue();
+      } catch(e) {
+        alert(e.message || 'Action failed');
+      }
+    };
+
+    loadQueue();
+  </script>
+</body>
+</html>

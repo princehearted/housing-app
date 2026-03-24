@@ -110,6 +110,8 @@ export const getTenantInterests = asyncHandler(async (req, res) => {
     .from("interests")
     .select(`
       *,
+      property_title:properties(title),
+      unit_type_name:unit_types(name),
       property:properties(title, city, area),
       unit:units(unit_number)
     `)
@@ -134,6 +136,8 @@ export const getLandlordInterests = asyncHandler(async (req, res) => {
     .from("interests")
     .select(`
       *,
+      property_title:properties(title),
+      unit_type_name:unit_types(name),
       property:properties(title, city, area),
       unit:units(unit_number)
     `)

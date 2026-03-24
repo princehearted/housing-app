@@ -68,6 +68,7 @@
     </div>
     <div class="toplinks">
       <span id="user-display" style="font-weight: 600;">Landlord</span>
+      <button onclick="toggleTheme()" class="btn-secondary" style="padding: 8px 16px;">Theme</button>
       <button onclick="logout()" class="btn-primary" style="padding: 8px 20px;">Logout</button>
     </div>
   </header>
@@ -280,6 +281,15 @@
     const user = API.getUser();
     if (!API.getToken() || !user?.landlord_id) window.location.href = 'login.html';
     document.getElementById('user-display').textContent = user.full_name;
+    const storedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', storedTheme);
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
 
     function logout() { API.clearToken(); API.clearUser(); window.location.href = 'login.html'; }
 
@@ -385,7 +395,7 @@
         document.getElementById('stat-total-units').textContent = unitsCount;
         
         // Load bookings count
-        const bData = await API.request('/interests/landlord');
+        const bData = await API.request('/interest/landlord');
         document.getElementById('stat-active-bookings').textContent = (bData.interests || []).filter(i => i.status === 'booked').length;
       } catch (e) { console.error(e); }
     }
@@ -394,7 +404,7 @@
       const list = document.getElementById('properties-list');
       list.innerHTML = '<p class="empty">Loading properties...</p>';
       try {
-        const data = await API.properties.listLandlord();
+        const data = await API.landlord.getProperties();
         const props = data.properties || [];
         
         if (props.length === 0) {
@@ -426,7 +436,7 @@
     async function loadBookings() {
       const list = document.getElementById('bookings-list');
       try {
-        const data = await API.request('/interests/landlord');
+        const data = await API.request('/interest/landlord');
         const items = data.interests || [];
         if (items.length === 0) {
           list.innerHTML = '<p class="empty">No inquiries received yet.</p>';
@@ -437,7 +447,7 @@
             <div class="booking-header">
               <div>
                 <h4 style="margin-bottom:4px;">${i.tenant_name}</h4>
-                <p style="font-size:0.85rem; color:var(--muted);">${i.property_title} • ${i.unit_type_name}</p>
+                <p style="font-size:0.85rem; color:var(--muted);">${i.property_title || i.property?.title || ''} • ${i.unit_type_name || ''}</p>
               </div>
               <span class="status-badge ${i.status}">${i.status}</span>
             </div>
@@ -453,10 +463,13 @@
 
     window.respondBooking = async (id, status) => {
       const response = prompt("Enter a message for the tenant:");
+      if (response === null) return;
       try {
-        await API.request(`/interests/${id}/respond`, {
+        // Backend expects action values: "complete" or "cancel"
+        const action = status === 'completed' ? 'complete' : 'cancel';
+        await API.request('/interest/respond', {
           method: 'POST',
-          body: JSON.stringify({ status, landlord_response: response })
+          body: JSON.stringify({ interest_id: id, action, response_message: response })
         });
         alert('Response sent!');
         loadBookings();
@@ -484,7 +497,10 @@
 
       try {
         const data = await API.properties.create(payload);
-        const propId = data.property.id;
+        const propId = data?.data?.[0]?.id;
+        if (!propId) {
+          throw new Error('Failed to create property (missing id)');
+        }
 
         // Add Unit Types
         for (const ut of unitTypes) {
@@ -498,8 +514,10 @@
           });
         }
 
-        // AUTO-INJECT TEST IMAGES IF NONE UPLOADED (For Testing Layouts)
-        if (selectedFiles.photos.length === 0) {
+        // Upload media if provided; otherwise inject mock data for layout testing.
+        if (selectedFiles.photos.length > 0) {
+          await API.landlord.uploadPropertyPhotos(propId, selectedFiles.photos.slice(0, 10));
+        } else {
           console.log("Injecting test photos for layout testing...");
           const testPhotos = [
             "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
@@ -514,7 +532,9 @@
           }
         }
 
-        if (selectedFiles.plans.length === 0) {
+        if (selectedFiles.plans.length > 0) {
+          await API.landlord.uploadPropertyDocuments(propId, selectedFiles.plans, 'floor_plan');
+        } else {
           console.log("Injecting test floor plans for layout testing...");
           const testPlans = [
             "https://images.unsplash.com/photo-1503387762-592dee58c460?auto=format&fit=crop&w=1200&q=80"

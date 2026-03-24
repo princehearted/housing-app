@@ -100,7 +100,7 @@ const API = {
       return API.request(`/properties?${query}`);
     },
     getById: (id) => API.request(`/property/${id}`),
-    create: (data) => API.request('/landlord/property/create', {
+    create: (data) => API.request('/property/create', {
       method: 'POST',
       body: JSON.stringify(data)
     })
@@ -108,37 +108,64 @@ const API = {
 
   // Landlord Methods
   landlord: {
-    getProperties: () => API.request('/landlord/my-properties'),
-    createUnitType: (data) => API.request('/landlord/unit-type/create', {
+    getProperties: () => API.request('/my-properties'),
+    createUnitType: (data) => API.request('/unit-type/create', {
       method: 'POST',
       body: JSON.stringify(data)
     }),
-    createUnit: (data) => API.request('/landlord/unit/create', {
+    createUnit: (data) => API.request('/unit/create', {
       method: 'POST',
       body: JSON.stringify(data)
     }),
-    uploadPhoto: async (propertyId, file, type = 'property_photo') => {
+    uploadPropertyPhotos: async (propertyId, files) => {
       const formData = new FormData();
-      formData.append('photo', file);
+      for (const file of files) formData.append('photos', file);
       formData.append('property_id', propertyId);
-      formData.append('photo_type', type);
-      
-      const res = await fetch(`${API_BASE_URL}/upload/property-photo`, {
+
+      const res = await fetch(`${API_BASE_URL}/upload/property-photos`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${API.getToken()}` },
         body: formData
       });
+
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || 'Upload failed');
       }
+
       return await res.json();
-    }
+    },
+    uploadPropertyDocuments: async (propertyId, files, documentType = 'floor_plan') => {
+      // Backend expects a single file under the `document` field.
+      const results = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append('document', file);
+        formData.append('property_id', propertyId);
+        formData.append('document_type', documentType);
+
+        const res = await fetch(`${API_BASE_URL}/upload/property-document`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${API.getToken()}` },
+          body: formData
+        });
+
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Document upload failed');
+        }
+
+        results.push(await res.json());
+      }
+      return results;
+    },
+    // Backwards-compatible helper (single photo)
+    uploadPhoto: async (propertyId, file) => API.landlord.uploadPropertyPhotos(propertyId, [file])
   },
   
   // Tenant Methods
   tenant: {
-    getInterests: () => API.request('/interests/tenant')
+    getInterests: () => API.request('/interest/my')
   },
 
   // Admin Methods

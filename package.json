@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "seed:demo": "node scripts/seedDemoData.js"
+    "seed:demo": "node scripts/seedDemoData.js",
+    "fix:accounts": "node scripts/fixTestAccounts.js",
+    "check:login": "node scripts/diagnoseLogin.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",

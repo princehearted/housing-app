@@ -58,6 +58,7 @@
       <a href="#" class="active" onclick="showTab('browse')">Browse Properties</a>
       <a href="#" onclick="showTab('my-bookings')">My Bookings</a>
       <a href="settings.html">Settings</a>
+      <button onclick="toggleTheme()" class="btn-secondary" style="padding: 8px 16px;">Theme</button>
       <button onclick="logout()" class="btn-primary" style="padding: 8px 20px;">Logout</button>
     </nav>
   </header>
@@ -101,6 +102,15 @@
   <script>
     const user = API.getUser();
     if (!API.getToken() || !user?.tenant_id) window.location.href = 'login.html';
+    const storedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', storedTheme);
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
 
     const categories = [
       { id: '', label: 'All Types' },
@@ -189,7 +199,7 @@
         }
 
         const data = await API.properties.listVerified(params);
-        const props = data.properties || [];
+        const props = (data.properties || []).filter((p) => p.verification_status === 'verified');
         
         document.getElementById('results-count').textContent = `${props.length} properties`;
         
@@ -203,6 +213,14 @@
             <div class="img" style="background-image: url('${p.primary_photo_url || 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80'}')"></div>
             <div class="body">
               <h4>${p.title}</h4>
+              <div class="loc" style="margin-bottom:8px;">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 21h18" />
+                  <path d="M5 21V7l7-4 7 4v14" />
+                  <path d="M9 10h2v2H9zM13 10h2v2h-2zM9 14h2v2H9zM13 14h2v2h-2z" />
+                </svg>
+                Office-ready listings available
+              </div>
               <div class="loc">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 ${p.area}, ${p.city}

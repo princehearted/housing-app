@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dark Theme Test - Habitra</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <h1>Habitra Theme Test</h1>
+    </div>
+    <div class="toplinks">
+      <button onclick="toggleTheme()" class="btn-primary">Toggle Theme</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <h1 style="margin-bottom: 24px;">Dark Theme Test Page</h1>
+    <p style="margin-bottom: 32px; color: var(--muted);">
+      Click "Toggle Theme" above to switch between light and dark modes. 
+      All elements below should be clearly visible in both modes.
+    </p>
+
+    <!-- Buttons Test -->
+    <div class="card">
+      <h2>Buttons</h2>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;">
+        <button class="btn-primary">Primary Button</button>
+        <button class="btn-secondary">Secondary Button</button>
+        <button class="btn-outline">Outline Button</button>
+        <button class="btn-primary btn-sm">Small Button</button>
+      </div>
+    </div>
+
+    <!-- Form Elements Test -->
+    <div class="card">
+      <h2>Form Elements</h2>
+      <div class="form-group">
+        <label>Text Input</label>
+        <input type="text" placeholder="Type something...">
+      </div>
+      <div class="form-group">
+        <label>Select Dropdown</label>
+        <select>
+          <option>Option 1</option>
+          <option>Option 2</option>
+          <option>Option 3</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Textarea</label>
+        <textarea placeholder="Enter text here..." rows="3"></textarea>
+      </div>
+    </div>
+
+    <!-- Stats Cards Test -->
+    <div class="card">
+      <h2>Statistics Cards</h2>
+      <div class="stats-row">
+        <div class="stat-card">
+          <h3>150</h3>
+          <p>Total Properties</p>
+        </div>
+        <div class="stat-card">
+          <h3>89</h3>
+          <p>Active Tenants</p>
+        </div>
+        <div class="stat-card">
+          <h3>45</h3>
+          <p>Landlords</p>
+        </div>
+        <div class="stat-card">
+          <h3>12</h3>
+          <p>Pending</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Badges Test -->
+    <div class="card">
+      <h2>Status Badges</h2>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;">
+        <span class="status-badge verified">Verified</span>
+        <span class="status-badge pending">Pending</span>
+        <span class="status-badge rejected">Rejected</span>
+        <span class="status-badge booked">Booked</span>
+        <span class="status-badge completed">Completed</span>
+        <span class="status-badge cancelled">Cancelled</span>
+      </div>
+    </div>
+
+    <!-- Property Card Test -->
+    <div class="card">
+      <h2>Property Card Example</h2>
+      <div class="property-card" style="max-width: 350px; margin-top: 16px;">
+        <div class="property-img" style="background: linear-gradient(135deg, #0ea5a4, #14b8a6);"></div>
+        <div class="property-info">
+          <h3>Modern Apartment</h3>
+          <div class="location">Nyali, Mombasa</div>
+          <div class="property-meta">
+            <span class="badge">2 Bedroom</span>
+            <span class="badge">High-End</span>
+            <span class="badge">5 Units</span>
+          </div>
+          <div class="property-price">KES 35,000/mo</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Test -->
+    <div class="card">
+      <h2>Table Example</h2>
+      <table style="margin-top: 16px;">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>John Doe</td>
+            <td>john@example.com</td>
+            <td><span class="status-badge verified">Active</span></td>
+            <td><button class="btn-outline btn-sm">View</button></td>
+          </tr>
+          <tr>
+            <td>Jane Smith</td>
+            <td>jane@example.com</td>
+            <td><span class="status-badge pending">Pending</span></td>
+            <td><button class="btn-outline btn-sm">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Upload Zone Test -->
+    <div class="card">
+      <h2>Upload Zone</h2>
+      <div class="upload-zone" style="margin-top: 16px;">
+        <p>Click to upload files</p>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-top: 8px;">
+          Drag and drop or click to browse
+        </p>
+      </div>
+    </div>
+
+    <!-- Navigation Links Test -->
+    <div class="card">
+      <h2>Navigation Links</h2>
+      <div class="sidebar" style="margin-top: 16px;">
+        <a href="#" class="nav-link active">Active Link</a>
+        <a href="#" class="nav-link">Regular Link</a>
+        <a href="#" class="nav-link">Another Link</a>
+      </div>
+    </div>
+
+    <!-- Tabs Test -->
+    <div class="card">
+      <h2>Tab Navigation</h2>
+      <div class="dashboard-tabs" style="margin-top: 16px;">
+        <button class="tab-btn active">Tab 1</button>
+        <button class="tab-btn">Tab 2</button>
+        <button class="tab-btn">Tab 3</button>
+      </div>
+    </div>
+
+    <!-- Text Colors Test -->
+    <div class="card">
+      <h2>Text Hierarchy</h2>
+      <h1 style="margin: 16px 0 8px 0;">Heading 1</h1>
+      <h2 style="margin: 8px 0;">Heading 2</h2>
+      <h3 style="margin: 8px 0;">Heading 3</h3>
+      <h4 style="margin: 8px 0;">Heading 4</h4>
+      <p style="margin: 8px 0;">Regular paragraph text with <a href="#" style="color: var(--accent);">a link</a></p>
+      <p style="margin: 8px 0; color: var(--muted);">Muted text for secondary information</p>
+    </div>
+
+    <div style="text-align: center; padding: 40px 0;">
+      <h3 style="color: var(--accent); margin-bottom: 12px;">✅ All Elements Visible?</h3>
+      <p style="color: var(--muted);">
+        If you can clearly see and read everything above in both light and dark modes,<br>
+        then the dark theme is working perfectly!
+      </p>
+      <button onclick="toggleTheme()" class="btn-primary" style="margin-top: 20px;">
+        Toggle Theme Again
+      </button>
+    </div>
+  </main>
+
+  <script>
+    // Load saved theme
+    const storedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', storedTheme);
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      
+      // Show confirmation
+      const mode = next === 'dark' ? 'Dark' : 'Light';
+      console.log(`Switched to ${mode} Mode`);
+    }
+  </script>
+</body>
+</html>

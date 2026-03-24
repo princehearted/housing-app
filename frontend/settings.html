@@ -57,6 +57,7 @@
     <div class="grid">
       <aside class="sidebar">
         <a href="#" class="nav-link active" onclick="showTab('profile')">Profile Info</a>
+        <a href="#" class="nav-link" onclick="showTab('preferences')">Preferences</a>
         <a href="#" class="nav-link" onclick="showTab('security')">Security</a>
         <a href="#" class="nav-link" onclick="showTab('danger')">Account Status</a>
       </aside>
@@ -92,6 +93,29 @@
                   </select>
                 </div>
               </div>
+              <div class="form-row">
+                <div>
+                  <label>Secondary Phone (Optional)</label>
+                  <input type="tel" id="set-phone-secondary" placeholder="+254...">
+                </div>
+                <div>
+                  <label>Emergency Contact Name (Optional)</label>
+                  <input type="text" id="set-emergency-name" placeholder="Full name">
+                </div>
+              </div>
+              <div class="form-row">
+                <div>
+                  <label>Emergency Contact Phone (Optional)</label>
+                  <input type="tel" id="set-emergency-phone" placeholder="+254...">
+                </div>
+                <div>
+                  <label>Preferred Language</label>
+                  <select id="set-language">
+                    <option value="en">English</option>
+                    <option value="sw">Swahili</option>
+                  </select>
+                </div>
+              </div>
               <button type="submit" class="btn-save">Save Profile Changes</button>
               <p id="profile-status" style="margin-top:12px; font-size:0.9rem; font-weight:600;"></p>
             </form>
@@ -119,6 +143,43 @@
                 <button type="submit" class="btn-save">Update Password</button>
                 <p id="pass-status" style="margin-top:12px; font-size:0.9rem; font-weight:600;"></p>
               </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="tab-preferences" class="tab-content card" style="display:none;">
+          <div class="settings-group">
+            <h3>App Preferences</h3>
+            <form id="preferences-form">
+              <div class="form-row">
+                <div>
+                  <label>Theme</label>
+                  <select id="pref-theme">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                  </select>
+                </div>
+                <div>
+                  <label>Default City Search</label>
+                  <input type="text" id="pref-default-city" placeholder="e.g. Mombasa">
+                </div>
+              </div>
+              <div style="display:grid; gap:14px; margin-bottom:20px;">
+                <label style="display:flex; align-items:center; gap:10px;">
+                  <input type="checkbox" id="pref-email-booking">
+                  Email me when a booking response is received
+                </label>
+                <label style="display:flex; align-items:center; gap:10px;">
+                  <input type="checkbox" id="pref-email-verification">
+                  Email me when account/property verification status changes
+                </label>
+                <label style="display:flex; align-items:center; gap:10px;">
+                  <input type="checkbox" id="pref-marketing">
+                  Receive occasional product updates
+                </label>
+              </div>
+              <button type="submit" class="btn-save">Save Preferences</button>
+              <p id="preferences-status" style="margin-top:12px; font-size:0.9rem; font-weight:600;"></p>
             </form>
           </div>
         </div>
@@ -156,11 +217,22 @@
     const token = API.getToken();
 
     if (!token) window.location.href = 'login.html';
+    const storedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', storedTheme);
 
     document.getElementById('set-name').value = user.full_name;
     document.getElementById('set-email').value = user.email;
     document.getElementById('set-phone').value = user.phone || '';
     document.getElementById('set-city').value = user.city || 'Mombasa';
+    document.getElementById('set-phone-secondary').value = localStorage.getItem('profile_phone_secondary') || '';
+    document.getElementById('set-emergency-name').value = localStorage.getItem('profile_emergency_name') || '';
+    document.getElementById('set-emergency-phone').value = localStorage.getItem('profile_emergency_phone') || '';
+    document.getElementById('set-language').value = localStorage.getItem('profile_language') || 'en';
+    document.getElementById('pref-theme').value = storedTheme;
+    document.getElementById('pref-default-city').value = localStorage.getItem('pref_default_city') || '';
+    document.getElementById('pref-email-booking').checked = localStorage.getItem('pref_email_booking') !== 'false';
+    document.getElementById('pref-email-verification').checked = localStorage.getItem('pref_email_verification') !== 'false';
+    document.getElementById('pref-marketing').checked = localStorage.getItem('pref_marketing') === 'true';
 
     document.getElementById('back-dash').onclick = (e) => {
       e.preventDefault();
@@ -205,6 +277,10 @@
         
         const updatedUser = { ...user, full_name: payload.name, phone: payload.phone, city: payload.city };
         API.setUser(updatedUser);
+        localStorage.setItem('profile_phone_secondary', document.getElementById('set-phone-secondary').value.trim());
+        localStorage.setItem('profile_emergency_name', document.getElementById('set-emergency-name').value.trim());
+        localStorage.setItem('profile_emergency_phone', document.getElementById('set-emergency-phone').value.trim());
+        localStorage.setItem('profile_language', document.getElementById('set-language').value);
       } catch (e) {
         status.textContent = e.message;
         status.style.color = 'red';
@@ -235,6 +311,20 @@
         status.textContent = e.message;
         status.style.color = 'red';
       }
+    };
+
+    document.getElementById('preferences-form').onsubmit = (e) => {
+      e.preventDefault();
+      const status = document.getElementById('preferences-status');
+      const theme = document.getElementById('pref-theme').value;
+      localStorage.setItem('theme', theme);
+      localStorage.setItem('pref_default_city', document.getElementById('pref-default-city').value.trim());
+      localStorage.setItem('pref_email_booking', String(document.getElementById('pref-email-booking').checked));
+      localStorage.setItem('pref_email_verification', String(document.getElementById('pref-email-verification').checked));
+      localStorage.setItem('pref_marketing', String(document.getElementById('pref-marketing').checked));
+      document.documentElement.setAttribute('data-theme', theme);
+      status.textContent = 'Preferences saved.';
+      status.style.color = 'green';
     };
   </script>
 </body>

@@ -21,7 +21,10 @@
 <body>
   <header class="topbar">
     <div class="brand" onclick="window.location.href='index.html'" style="cursor:pointer;"><span class="brand-dot"></span><h1>Habitra</h1></div>
-    <div class="toplinks"><a href="tenant-dashboard.html">Back to Dashboard</a></div>
+    <div class="toplinks">
+      <a href="tenant-dashboard.html">Back to Dashboard</a>
+      <button onclick="toggleTheme()" class="btn-secondary" style="padding: 8px 16px;">Theme</button>
+    </div>
   </header>
 
   <main class="shell">
@@ -96,6 +99,16 @@
     const propId = params.get('id');
     let currentProp = null;
     let selectedUnitType = null;
+    let selectedUnitId = null;
+    const storedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', storedTheme);
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
 
     async function loadDetails() {
       try {
@@ -166,7 +179,7 @@
                 </div>
                 <div style="text-align:right;">
                   <div style="font-weight:700; color:var(--accent); margin-bottom:8px;">KES ${Number(u.price).toLocaleString()}</div>
-                  <button class="btn-primary" onclick="openBookModal('${u.id}', '${u.name}', ${u.price})" style="padding:6px 12px; font-size:0.8rem;">Book Now</button>
+                  <button class="btn-primary" onclick="openBookModal('${u.id}', '${u.name}', ${u.price}, '${u.units?.[0]?.id || ''}')" style="padding:6px 12px; font-size:0.8rem;">Book Now</button>
                 </div>
               </div>
             </div>
@@ -207,8 +220,9 @@
       event.target.classList.add('active');
     }
 
-    function openBookModal(id, name, price) {
+    function openBookModal(id, name, price, unitId) {
       selectedUnitType = id;
+      selectedUnitId = unitId;
       document.getElementById('modal-title').textContent = `Book ${name}`;
       document.getElementById('modal-subtitle').textContent = `Monthly Rent: KES ${price.toLocaleString()}`;
       document.getElementById('book-modal').style.display = 'flex';
@@ -238,15 +252,15 @@
     document.getElementById('confirm-book').onclick = async () => {
       const user = API.getUser();
       if (!user?.tenant_id) { alert('Please log in as a tenant to book.'); return; }
+      if (!selectedUnitType || !selectedUnitId) { alert('Please select a unit to book.'); return; }
       
       try {
-        await API.request('/interests', {
+        await API.request('/interest/create', {
           method: 'POST',
           body: JSON.stringify({
             property_id: propId,
             unit_type_id: selectedUnitType,
-            tenant_name: user.full_name,
-            tenant_email: user.email,
+            unit_id: selectedUnitId,
             tenant_message: document.getElementById('book-msg').value
           })
         });

@@ -459,6 +459,7 @@ export const getPropertyDetails = asyncHandler(async (req, res) => {
   const { id } = req.params
   const adminId = req.auth?.admin_user_id
   const landlordId = req.auth?.landlord_id
+  const isTenantView = !adminId && !landlordId
 
   let query = supabase.from("properties").select("*").eq("id", id)
 
@@ -566,9 +567,16 @@ export const getPropertyDetails = asyncHandler(async (req, res) => {
     }
   })
 
+  const safeProperty = isTenantView
+    ? (() => {
+        const { verification_status, ...rest } = property
+        return rest
+      })()
+    : property
+
   res.json({
     property: {
-      ...property,
+      ...safeProperty,
       amenities: amenities || [],
       photos: effectivePhotos,
       floor_plans: effectiveFloorPlans,

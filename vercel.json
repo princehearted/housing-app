@@ -1,5 +1,12 @@
 ﻿{
   "version": 2,
-  "buildCommand": "exit 0",
-  "outputDirectory": "frontend"
+  "public": false,
+  "buildCommand": "echo 'Static deployment'",
+  "outputDirectory": "frontend",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/services.html"
+    }
+  ]
 }

@@ -1,0 +1,59 @@
+# Vercel ignore - frontend only deployment
+# Exclude all backend files
+
+# Backend entry points
+server.js
+app.js
+test-server.js
+
+# Backend directories
+config/
+controllers/
+middleware/
+routes/
+services/
+utils/
+scripts/
+data/
+postman/
+
+# Database files
+*.sql
+
+# Build/Source files
+.git/
+.gitignore
+.env
+.env.local
+.env*.local
+
+# Package files (but keep frontend/package.json)
+!frontend/
+
+# Node modules
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+README.md
+DEPLOYMENT_GUIDE.md
+VERCEL_QUICK_START.md
+
+# Config files
+vercel.json.bak
+package-lock.json
+yarn.lock
+

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Habitra | Landlord Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .shell { padding: 24px; max-width: 1200px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: 240px 1fr; gap: 32px; }
+    
+    .sidebar { display: flex; flex-direction: column; gap: 10px; }
+    .nav-link { 
+      padding: 14px 18px; border-radius: 12px; text-decoration: none; 
+      color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 12px; 
+      transition: all 0.2s;
+    }
+    .nav-link:hover { background: rgba(0,0,0,0.05); color: var(--text); }
+    .nav-link.active { 
+      background: var(--accent); 
+      color: white !important; 
+      box-shadow: 0 4px 12px rgba(14, 165, 164, 0.2);
+    }
+    .nav-link.active * { color: white !important; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 28px; margin-bottom: 24px; }
+    
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: 20px; }
+    .stat-card h3 { font-size: 1.8rem; margin-bottom: 4px; }
+    .stat-card p { color: var(--muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+
+    .prop-item { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); transition: background 0.2s; }
+    .prop-item:hover { background: rgba(0,0,0,0.02); }
+    .prop-info h4 { margin-bottom: 4px; font-family: 'Sora', sans-serif; }
+    .prop-info p { color: var(--muted); font-size: 0.9rem; }
+
+    .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .status-badge.verified { background: #dcfce7; color: #166534; }
+    .status-badge.pending { background: #fef3c7; color: #92400e; }
+    .status-badge.rejected { background: #fee2e2; color: #991b1b; }
+
+    .form-tabs { display: flex; gap: 24px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
+    .form-tab { padding: 12px 0; background: none; border: none; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+    .form-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+
+    .unit-type-box { border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; background: #fcfcfc; }
+    .unit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .upload-zone { border: 2px dashed var(--border); border-radius: 20px; padding: 40px; text-align: center; cursor: pointer; transition: 0.2s; }
+    .upload-zone:hover { border-color: var(--accent); background: rgba(14, 165, 164, 0.02); }
+    .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-top: 20px; }
+    .preview-img { width: 100%; height: 100px; border-radius: 12px; object-fit: cover; border: 1px solid var(--border); }
+
+    .booking-card { border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+    .booking-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <h1>Habitra</h1>
+    </div>
+    <div class="toplinks">
+      <span id="user-display" style="font-weight: 600;">Landlord</span>
+      <button onclick="toggleTheme()" class="btn-secondary" style="padding: 8px 16px;">Theme</button>
+      <button onclick="logout()" class="btn-primary" style="padding: 8px 20px;">Logout</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="grid">
+      <aside class="sidebar">
+        <a href="#" class="nav-link active" onclick="showTab('dashboard')">Overview</a>
+        <a href="#" class="nav-link" onclick="showTab('properties')">My Properties</a>
+        <a href="#" class="nav-link" onclick="showTab('add-property')">Add Property</a>
+        <a href="#" class="nav-link" onclick="showTab('bookings')">Bookings</a>
+        <a href="settings.html" class="nav-link">Settings</a>
+      </aside>
+
+      <div class="content">
+        <!-- Dashboard Overview -->
+        <div id="tab-dashboard" class="tab-content">
+          <div class="stats-row">
+            <div class="stat-card">
+              <h3 id="stat-total-props">0</h3>
+              <p>Total Properties</p>
+            </div>
+            <div class="stat-card">
+              <h3 id="stat-verified-props">0</h3>
+              <p>Verified</p>
+            </div>
+            <div class="stat-card">
+              <h3 id="stat-total-units">0</h3>
+              <p>Total Units</p>
+            </div>
+            <div class="stat-card">
+              <h3 id="stat-active-bookings">0</h3>
+              <p>Pending Inquiries</p>
+            </div>
+          </div>
+          
+          <div class="card">
+            <h2 style="margin-bottom: 20px;">Quick Actions</h2>
+            <div style="display:flex; gap:12px;">
+              <button class="btn-primary" onclick="showTab('add-property')">List New Property</button>
+              <button class="btn-secondary" onclick="showTab('bookings')">View Inquiries</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Properties List -->
+        <div id="tab-properties" class="tab-content" style="display:none;">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+              <h2>My Managed Properties</h2>
+              <button class="btn-primary" onclick="showTab('add-property')">+ Add Property</button>
+            </div>
+            <div id="properties-list">
+              <p class="empty">Loading properties...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Property Form -->
+        <div id="tab-add-property" class="tab-content" style="display:none;">
+          <div class="card">
+            <h2>Add New Property</h2>
+            <p style="color:var(--muted); margin-bottom:24px;">Follow the steps to list your property for verification.</p>
+            
+            <div class="form-tabs">
+              <button class="form-tab active" onclick="setFormStep(1)">1. Basic Details</button>
+              <button class="form-tab" onclick="setFormStep(2)">2. Units & Pricing</button>
+              <button class="form-tab" onclick="setFormStep(3)">3. Photos & Floor Plans</button>
+              <button class="form-tab" onclick="setFormStep(4)">4. Rules & Amenities</button>
+            </div>
+
+            <form id="add-property-form">
+              <!-- Step 1: Basic Info -->
+              <div id="step-1" class="form-section active">
+                <div class="form-group">
+                  <label>Property Title</label>
+                  <input type="text" id="prop-title" placeholder="e.g. Habitra Heights" required>
+                </div>
+                <div class="unit-grid">
+                  <div class="form-group">
+                    <label>Property Type</label>
+                    <select id="prop-type" required>
+                      <option value="apartment">Apartment</option>
+                      <option value="mansion">Mansion</option>
+                      <option value="bedsitter">Bedsitter</option>
+                      <option value="single_room">Single Room</option>
+                      <option value="hostel">Hostel</option>
+                      <option value="paying_guest">Paying Guest</option>
+                      <option value="shop">Shop Unit</option>
+                      <option value="warehouse">Warehouse</option>
+                      <option value="godown">Godown</option>
+                      <option value="office">Office Space</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Property Class</label>
+                    <select id="prop-class" required>
+                      <option value="high_end_apartment">High-End / Luxury</option>
+                      <option value="medium_price_apartment">Mid-Range</option>
+                      <option value="budget">Budget Friendly</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="unit-grid">
+                  <div class="form-group">
+                    <label>City</label>
+                    <input type="text" id="prop-city" placeholder="e.g. Mombasa" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Area / Neighborhood</label>
+                    <input type="text" id="prop-area" placeholder="e.g. Nyali" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Exact Address</label>
+                  <input type="text" id="prop-address" placeholder="Street, Building Name" required>
+                </div>
+                <div class="form-group">
+                  <label>Description</label>
+                  <textarea id="prop-desc" placeholder="Tell tenants about the property..." style="height:120px;"></textarea>
+                </div>
+                <button type="button" class="btn-primary" onclick="setFormStep(2)" style="width:100%; margin-top:12px;">Next: Units & Pricing</button>
+              </div>
+
+              <!-- Step 2: Units -->
+              <div id="step-2" class="form-section">
+                <h4>Unit Categories</h4>
+                <p style="font-size:0.85rem; color:var(--muted); margin-bottom:20px;">You can add multiple variations of the same type (e.g. Small vs Large Bedsitter).</p>
+                <div id="unit-types-list"></div>
+                <button type="button" class="btn-secondary" onclick="addUnitTypeRow()" style="width:100%; margin-bottom:24px;">+ Add Unit Type</button>
+                <div style="display:flex; gap:12px;">
+                  <button type="button" class="btn-outline" onclick="setFormStep(1)" style="flex:1;">Back</button>
+                  <button type="button" class="btn-primary" onclick="setFormStep(3)" style="flex:1;">Next: Photos & Plans</button>
+                </div>
+              </div>
+
+              <!-- Step 3: Photos & Plans -->
+              <div id="step-3" class="form-section">
+                <div style="margin-bottom:32px;">
+                  <h4>Property Photos</h4>
+                  <p style="font-size:0.85rem; color:var(--muted); margin-bottom:12px;">General photos of the building and compound.</p>
+                  <div class="upload-zone" onclick="document.getElementById('file-photos').click()">
+                    <p>Click to upload property photos</p>
+                    <input type="file" id="file-photos" multiple accept="image/*" style="display:none;" onchange="handleFileSelect(event, 'photos')">
+                  </div>
+                  <div id="preview-photos" class="preview-grid"></div>
+                </div>
+
+                <div style="margin-bottom:32px;">
+                  <h4>Floor Plans (Technical)</h4>
+                  <p style="font-size:0.85rem; color:var(--muted); margin-bottom:12px;">Upload specific floor plans to help tenants and admins verify dimensions.</p>
+                  <div class="upload-zone" onclick="document.getElementById('file-plans').click()" style="border-color: #0ea5a4;">
+                    <p>Click to upload technical floor plans</p>
+                    <input type="file" id="file-plans" multiple accept="image/*,application/pdf" style="display:none;" onchange="handleFileSelect(event, 'plans')">
+                  </div>
+                  <div id="preview-plans" class="preview-grid"></div>
+                </div>
+
+                <div style="display:flex; gap:12px;">
+                  <button type="button" class="btn-outline" onclick="setFormStep(2)" style="flex:1;">Back</button>
+                  <button type="button" class="btn-primary" onclick="setFormStep(4)" style="flex:1;">Next: Final Steps</button>
+                </div>
+              </div>
+
+              <!-- Step 4: Rules & Amenities -->
+              <div id="step-4" class="form-section">
+                <div class="form-group">
+                  <label>House Rules</label>
+                  <textarea id="prop-rules" placeholder="e.g. No pets, quiet hours after 10 PM..." style="height:100px;"></textarea>
+                </div>
+                <div class="form-group">
+                  <label>Amenities</label>
+                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom: 16px;">
+                    <label style="display:flex; gap:8px; font-size:0.9rem;"><input type="checkbox" value="water"> Constant Water</label>
+                    <label style="display:flex; gap:8px; font-size:0.9rem;"><input type="checkbox" value="security"> 24/7 Security</label>
+                    <label style="display:flex; gap:8px; font-size:0.9rem;"><input type="checkbox" value="parking"> Ample Parking</label>
+                    <label style="display:flex; gap:8px; font-size:0.9rem;"><input type="checkbox" value="limited_parking"> Limited Parking Slots</label>
+                    <label style="display:flex; gap:8px; font-size:0.9rem;"><input type="checkbox" value="wifi"> Fiber Internet</label>
+                    <label style="display:flex; gap:8px; font-size:0.9rem;"><input type="checkbox" value="backup_power"> Backup Generator</label>
+                    <label style="display:flex; gap:8px; font-size:0.9rem;"><input type="checkbox" value="gym"> Fitness Gym</label>
+                  </div>
+                  <label>Other Amenities (Write any others here)</label>
+                  <textarea id="prop-custom-amenities" placeholder="e.g. Swimming Pool, Solar Water Heating, etc." style="height:80px; margin-top:8px;"></textarea>
+                </div>
+                <div style="display:flex; gap:12px; margin-top:32px;">
+                  <button type="button" class="btn-outline" onclick="setFormStep(3)" style="flex:1;">Back</button>
+                  <button type="submit" class="btn-primary" style="flex:2;">Create Listing for Verification</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Bookings -->
+        <div id="tab-bookings" class="tab-content" style="display:none;">
+          <div class="card">
+            <h2>Tenant Inquiries</h2>
+            <p style="color:var(--muted); margin-bottom:24px;">Respond to potential tenants who are interested in your units.</p>
+            <div id="bookings-list">
+              <p class="empty">No inquiries yet.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/theme.js"></script>
+  <script>
+    const user = API.getUser();
+    if (!API.getToken() || !user?.landlord_id) window.location.href = 'login.html';
+    document.getElementById('user-display').textContent = user.full_name;
+
+    function logout() { API.clearToken(); API.clearUser(); window.location.href = 'login.html'; }
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      document.getElementById('tab-' + tabId).style.display = 'block';
+      event.target.classList.add('active');
+      
+      if (tabId === 'dashboard') loadDashboardStats();
+      if (tabId === 'properties') loadMyProperties();
+      if (tabId === 'bookings') loadBookings();
+    }
+
+    function setFormStep(step) {
+      document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.form-tab').forEach(t => t.classList.remove('active'));
+      document.getElementById('step-' + step).classList.add('active');
+      document.querySelectorAll('.form-tab')[step-1].classList.add('active');
+    }
+
+    let unitTypes = [];
+    function addUnitTypeRow() {
+      const id = Date.now();
+      const row = { id, name: '', price: '', size: '', count: '' };
+      unitTypes.push(row);
+      renderUnitTypes();
+    }
+
+    function removeUnitTypeRow(id) {
+      unitTypes = unitTypes.filter(u => u.id !== id);
+      renderUnitTypes();
+    }
+
+    function renderUnitTypes() {
+      const list = document.getElementById('unit-types-list');
+      if (unitTypes.length === 0) {
+        list.innerHTML = '<p style="text-align:center; padding:20px; color:var(--muted);">No unit types added yet.</p>';
+        return;
+      }
+      list.innerHTML = unitTypes.map(u => `
+        <div class="unit-type-box">
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+            <input type="text" placeholder="e.g. Deluxe Bedsitter" value="${u.name}" onchange="updateUnit(${u.id}, 'name', this.value)" style="flex:1; margin-right:12px;">
+            <button type="button" onclick="removeUnitTypeRow(${u.id})" style="color:red; background:none; border:none; cursor:pointer;">&times;</button>
+          </div>
+          <div class="unit-grid">
+            <div class="form-group">
+              <label>Monthly Rent (KES)</label>
+              <input type="number" placeholder="e.g. 15000" value="${u.price}" onchange="updateUnit(${u.id}, 'price', this.value)">
+            </div>
+            <div class="form-group">
+              <label>Number of Units</label>
+              <input type="number" placeholder="e.g. 10" value="${u.count}" onchange="updateUnit(${u.id}, 'count', this.value)">
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:10px;">
+            <label>Approx. Size (SQM)</label>
+            <input type="number" placeholder="e.g. 25" value="${u.size}" onchange="updateUnit(${u.id}, 'size', this.value)">
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.updateUnit = (id, field, val) => {
+      const u = unitTypes.find(item => item.id === id);
+      if (u) u[field] = val;
+    }
+
+    let selectedFiles = { photos: [], plans: [] };
+    function handleFileSelect(e, type) {
+      const files = Array.from(e.target.files);
+      selectedFiles[type] = [...selectedFiles[type], ...files];
+      renderPreviews(type);
+    }
+
+    function renderPreviews(type) {
+      const grid = document.getElementById('preview-' + type);
+      grid.innerHTML = selectedFiles[type].map((file, i) => `
+        <div style="position:relative;">
+          <img src="${URL.createObjectURL(file)}" class="preview-img">
+          <button type="button" onclick="removeFile('${type}', ${i})" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border-radius:50%; border:none; width:20px; height:20px; cursor:pointer;">&times;</button>
+        </div>
+      `).join('');
+    }
+
+    window.removeFile = (type, i) => {
+      selectedFiles[type].splice(i, 1);
+      renderPreviews(type);
+    }
+
+    async function loadDashboardStats() {
+      try {
+        const data = await API.landlord.getProperties();
+        const props = data.properties || [];
+        document.getElementById('stat-total-props').textContent = props.length;
+        document.getElementById('stat-verified-props').textContent = props.filter(p => p.verification_status === 'verified').length;
+        
+        let unitsCount = 0;
+        props.forEach(p => {
+          unitsCount += (p.unit_types || []).reduce((sum, ut) => sum + (ut.total_units || 0), 0);
+        });
+        document.getElementById('stat-total-units').textContent = unitsCount;
+        
+        // Load bookings count
+        const bData = await API.request('/interest/landlord');
+        document.getElementById('stat-active-bookings').textContent = (bData.interests || []).filter(i => i.status === 'booked').length;
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadMyProperties() {
+      const list = document.getElementById('properties-list');
+      list.innerHTML = '<p class="empty">Loading properties...</p>';
+      try {
+        const data = await API.landlord.getProperties();
+        const props = data.properties || [];
+        
+        if (props.length === 0) {
+          list.innerHTML = '<p class="empty">You haven\'t listed any properties yet. Click "List Property" to get started!</p>';
+          return;
+        }
+
+        list.innerHTML = props.map(p => `
+          <div class="prop-item">
+            <div class="prop-info">
+              <h4>${p.title}</h4>
+              <p>${p.area}, ${p.city} • ${p.property_type}</p>
+              <div style="margin-top:8px;">
+                <span class="status-badge ${p.verification_status}">${p.verification_status}</span>
+              </div>
+            </div>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-outline btn-sm" onclick="window.location.href='property.html?id=${p.id}'">View Listing</button>
+              <button class="btn-primary btn-sm" onclick="manageUnits('${p.id}')">Manage Units</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error("Error loading properties:", e);
+        list.innerHTML = `<p class="empty">Unable to load properties at this time. <br><small style="color:red;">${e.message || 'Server error'}</small></p>`;
+      }
+    }
+
+    async function loadBookings() {
+      const list = document.getElementById('bookings-list');
+      try {
+        const data = await API.request('/interest/landlord');
+        const items = data.interests || [];
+        if (items.length === 0) {
+          list.innerHTML = '<p class="empty">No inquiries received yet.</p>';
+          return;
+        }
+        list.innerHTML = items.map(i => `
+          <div class="booking-card">
+            <div class="booking-header">
+              <div>
+                <h4 style="margin-bottom:4px;">${i.tenant_name}</h4>
+                <p style="font-size:0.85rem; color:var(--muted);">${i.property_title || i.property?.title || ''} • ${i.unit_type_name || ''}</p>
+              </div>
+              <span class="status-badge ${i.status}">${i.status}</span>
+            </div>
+            <p style="font-size:0.95rem; margin-bottom:16px; font-style:italic;">"${i.tenant_message || 'No message provided.'}"</p>
+            <div style="display:flex; gap:10px;">
+              <button class="btn-primary btn-sm" onclick="respondBooking('${i.id}', 'completed')">Accept & Share Contact</button>
+              <button class="btn-outline btn-sm" onclick="respondBooking('${i.id}', 'cancelled')">Decline</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) { list.innerHTML = '<p class="empty">Error loading inquiries.</p>'; }
+    }
+
+    window.respondBooking = async (id, status) => {
+      const response = prompt("Enter a message for the tenant:");
+      if (response === null) return;
+      try {
+        // Backend expects action values: "complete" or "cancel"
+        const action = status === 'completed' ? 'complete' : 'cancel';
+        await API.request('/interest/respond', {
+          method: 'POST',
+          body: JSON.stringify({ interest_id: id, action, response_message: response })
+        });
+        alert('Response sent!');
+        loadBookings();
+      } catch (e) { alert(e.message); }
+    }
+
+    document.getElementById('add-property-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Listing...';
+
+      const payload = {
+        title: document.getElementById('prop-title').value,
+        property_type: document.getElementById('prop-type').value,
+        property_class: document.getElementById('prop-class').value,
+        city: document.getElementById('prop-city').value,
+        area: document.getElementById('prop-area').value,
+        address: document.getElementById('prop-address').value,
+        description: document.getElementById('prop-desc').value,
+        house_rules: document.getElementById('prop-rules').value,
+        amenities: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value),
+        country: 'Kenya', state: 'Kenya', neighborhood: document.getElementById('prop-area').value, total_units: 0
+      };
+
+      try {
+        const data = await API.properties.create(payload);
+        const propId = data?.data?.[0]?.id;
+        if (!propId) {
+          throw new Error('Failed to create property (missing id)');
+        }
+
+        // Add Unit Types
+        for (const ut of unitTypes) {
+          await API.landlord.createUnitType({
+            property_id: propId,
+            name: ut.name,
+            price: Number(ut.price),
+            total_units: Number(ut.count),
+            size_sqm: Number(ut.size),
+            unit_category: 'residential'
+          });
+        }
+
+        // Upload media if provided; otherwise inject mock data for layout testing.
+        if (selectedFiles.photos.length > 0) {
+          await API.landlord.uploadPropertyPhotos(propId, selectedFiles.photos.slice(0, 10));
+        } else {
+          console.log("Injecting test photos for layout testing...");
+          const testPhotos = [
+            "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80",
+            "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80"
+          ];
+          for (const url of testPhotos) {
+            await API.request('/property-photo/mock', {
+              method: 'POST',
+              body: JSON.stringify({ property_id: propId, photo_url: url })
+            });
+          }
+        }
+
+        if (selectedFiles.plans.length > 0) {
+          await API.landlord.uploadPropertyDocuments(propId, selectedFiles.plans, 'floor_plan');
+        } else {
+          console.log("Injecting test floor plans for layout testing...");
+          const testPlans = [
+            "https://images.unsplash.com/photo-1503387762-592dee58c460?auto=format&fit=crop&w=1200&q=80"
+          ];
+          for (const url of testPlans) {
+            await API.request('/property-document/mock', {
+              method: 'POST',
+              body: JSON.stringify({ property_id: propId, document_url: url, document_type: 'floor_plan' })
+            });
+          }
+        }
+
+        alert('Property listed successfully! It will appear once verified by Admin.');
+        showTab('properties');
+      } catch (err) {
+        alert(err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Listing for Verification';
+      }
+    };
+
+    loadDashboardStats();
+    addUnitTypeRow(); // Add one default row
+  </script>
+</body>
+</html>

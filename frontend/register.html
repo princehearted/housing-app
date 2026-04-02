@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Habitra | Register</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Outfit', sans-serif; background: #ffffff; color: #000000; min-height: 100vh; }
+    body.dark { background: #000000; color: #ffffff; }
+    body.dark a, body.dark h1, body.dark h2, body.dark h3, body.dark h4, body.dark p, body.dark span, body.dark label { color: #ffffff !important; }
+    body.dark input, body.dark select { background: #1a1a1a !important; color: #ffffff !important; border-color: #333 !important; }
+    body.dark header { background: #111; border-color: #333; }
+    body.dark .reg-card { background: #111; border-color: #333; }
+
+    header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+    .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #0ea5a4, #14b8a6); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 18px; height: 18px; color: white; }
+    .logo span { font-family: 'Sora', sans-serif; font-size: 1.3rem; font-weight: 700; }
+    .nav-btns { display: flex; gap: 10px; align-items: center; }
+    .nav-btn { padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; text-decoration: none; }
+    .nav-btn.light { background: #f1f5f9; color: #000; }
+    body.dark .nav-btn.light { background: #222; color: #fff; }
+
+    .reg-wrap { max-width: 450px; margin: 30px auto; padding: 0 16px; }
+    .reg-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 28px; }
+    .reg-card h2 { font-family: 'Sora', sans-serif; margin-bottom: 6px; }
+    .reg-card .sub { color: #555; margin-bottom: 20px; font-size: 0.9rem; }
+    body.dark .reg-card .sub { color: #aaa; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 0.9rem; }
+    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 1rem; }
+
+    .file-box { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .file-inp { border: 2px dashed #e2e8f0; border-radius: 12px; padding: 16px; text-align: center; cursor: pointer; }
+    .file-inp:hover { border-color: #0ea5a4; }
+    .file-inp p { font-size: 0.8rem; color: #666; margin-bottom: 6px; }
+    body.dark .file-inp p { color: #888; }
+    .file-inp input { display: none; }
+    .file-inp .upl-btn { display: inline-block; padding: 6px 12px; background: #0ea5a4; color: white; border-radius: 16px; font-size: 0.8rem; }
+
+    .form-btn { width: 100%; padding: 14px; background: #0ea5a4; color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+    .form-btn:disabled { opacity: 0.6; }
+    .form-status { text-align: center; margin-top: 14px; font-size: 0.85rem; }
+    .form-status.error { color: #ef4444; }
+    .form-status.success { color: #22c55e; }
+    .reg-foot { text-align: center; margin-top: 18px; font-size: 0.9rem; }
+    .reg-foot a { color: #0ea5a4; font-weight: 500; }
+
+    .theme-btn { background: none; border: none; cursor: pointer; padding: 8px; }
+    .theme-btn svg { stroke: #000; }
+    body.dark .theme-btn svg { stroke: #fff; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="services.html" class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></div>
+      <span>Habitra</span>
+    </a>
+    <div class="nav-btns">
+      <button class="theme-btn" onclick="toggleTheme()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg>
+      </button>
+      <a href="services.html" class="nav-btn light">Home</a>
+      <a href="login.html" class="nav-btn light">Login</a>
+    </div>
+  </header>
+
+  <div class="reg-wrap">
+    <div class="reg-card">
+      <h2>Create Account</h2>
+      <p class="sub">Join Habitra to find your perfect home</p>
+
+      <form id="reg-form">
+        <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" placeholder="Your full name" required></div>
+        <div class="form-group"><label>Email</label><input type="text" id="reg-email" placeholder="you@example.com" required autocomplete="off"></div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="reg-phone" placeholder="+254712345678" required></div>
+        <div class="form-group"><label>City</label>
+          <select id="reg-city" required>
+            <option value="">Select city</option>
+            <option value="Mombasa">Mombasa</option>
+            <option value="Nairobi">Nairobi</option>
+            <option value="Kisumu">Kisumu</option>
+            <option value="Nakuru">Nakuru</option>
+            <option value="Eldoret">Eldoret</option>
+          </select>
+        </div>
+        <div class="form-group"><label>I am a</label>
+          <select id="reg-role" required>
+            <option value="tenant">Tenant (looking for property)</option>
+            <option value="landlord">Landlord (listing property)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="Create password" required></div>
+
+        <div class="form-group"><label>Upload ID</label>
+          <div class="file-box">
+            <div class="file-inp" onclick="document.getElementById('id-front').click()">
+              <p>Front</p><input type="file" id="id-front" accept="image/*"><span class="upl-btn">Choose</span>
+            </div>
+            <div class="file-inp" onclick="document.getElementById('id-back').click()">
+              <p>Back</p><input type="file" id="id-back" accept="image/*"><span class="upl-btn">Choose</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="form-btn" id="reg-submit">Create Account</button>
+        <p class="form-status" id="reg-status"></p>
+      </form>
+
+      <p class="reg-foot">Already have an account? <a href="login.html">Login here</a></p>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/theme.js"></script>
+  <script>
+
+    const emailInput = document.getElementById('reg-email');
+    emailInput.addEventListener('input', function() {
+      if (this.value.includes('"')) { this.value = this.value.replace(/"/g, '@'); }
+      if (this.value.includes("'")) { this.value = this.value.replace(/'/g, ''); }
+    });
+
+    const form = document.getElementById('reg-form');
+    const statusEl = document.getElementById('reg-status');
+    const submitBtn = document.getElementById('reg-submit');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusEl.textContent = 'Creating account...';
+      statusEl.className = 'form-status';
+      submitBtn.disabled = true;
+
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const phone = document.getElementById('reg-phone').value.trim();
+      const city = document.getElementById('reg-city').value;
+      const role = document.getElementById('reg-role').value;
+      const password = document.getElementById('reg-password').value;
+      
+      const idFront = document.getElementById('id-front').files[0];
+      const idBack = document.getElementById('id-back').files[0];
+
+      const formData = new FormData();
+      formData.append('full_name', name);
+      formData.append('email', email);
+      formData.append('phone', phone);
+      formData.append('city', city);
+      formData.append('role', role);
+      formData.append('password', password);
+      
+      if (idFront) formData.append('id_front', idFront);
+      if (idBack) formData.append('id_back', idBack);
+
+      try {
+        const endpoint = (idFront || idBack) ? '/auth/register-with-docs' : '/auth/register';
+        
+        // Get base URL dynamically for local/network/production
+        const getBaseUrl = () => {
+          const { hostname, protocol, port } = window.location;
+          if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            return `${protocol}//${hostname}:${port || '5000'}`;
+          }
+          if (hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+            return `${protocol}//${hostname}:${port || '5000'}`;
+          }
+          return '';
+        };
+        
+        const res = await fetch(`${getBaseUrl()}/api${endpoint}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Registration failed');
+
+        statusEl.textContent = 'Account created! Login after admin verifies your ID.';
+        statusEl.className = 'form-status success';
+        setTimeout(() => window.location.href = 'login.html', 2000);
+      } catch (err) {
+        statusEl.textContent = err.message;
+        statusEl.className = 'form-status error';
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

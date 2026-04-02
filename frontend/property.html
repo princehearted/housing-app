@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Habitra | Property Details</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .gallery { height: 400px; background: #eee; border-radius: 24px; overflow: hidden; position: relative; margin-bottom: 24px; }
+    .gallery img { width: 100%; height: 100%; object-fit: cover; }
+    .tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; padding: 10px; background: #ffffff; border-radius: 16px; }
+    .tab-btn { padding: 12px 24px; background: none; border: none; font-weight: 600; cursor: pointer; color: var(--muted); border-radius: 12px; transition: 0.2s; }
+    .tab-btn.active { background: var(--accent); color: white !important; box-shadow: 0 4px 12px rgba(14, 165, 164, 0.2); }
+    .tab-btn.active * { color: white !important; }
+    .unit-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 100; }
+    .modal-content { background: var(--surface); padding: 32px; border-radius: 24px; width: 100%; max-width: 500px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" onclick="window.location.href='index.html'" style="cursor:pointer;"><span class="brand-dot"></span><h1>Habitra</h1></div>
+    <div class="toplinks">
+      <a href="tenant-dashboard.html">Back to Dashboard</a>
+      <button onclick="toggleTheme()" class="btn-secondary" style="padding: 8px 16px;">Theme</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div id="admin-bar" style="display:none; background:#fef3c7; padding:16px; border-radius:16px; margin-bottom:24px; border:1px solid #f59e0b; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <strong style="color:#92400e;">Admin Review Mode</strong>
+        <p style="margin:0; font-size:0.85rem; color:#92400e;">Review the photos and floor plans before approving.</p>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn-secondary" onclick="rejectProp()" style="background:white; color:#991b1b; border-color:#fee2e2;">Reject</button>
+        <button class="btn-primary" onclick="approveProp()">Approve Property</button>
+      </div>
+    </div>
+
+    <div id="prop-loading">Loading property details...</div>
+    <div id="prop-content" style="display:none;">
+      <div class="gallery" id="main-gallery">
+        <img src="wallpaper.jpg" id="main-img">
+        <div id="gallery-nav" style="position:absolute; bottom:20px; right:20px; display:flex; gap:10px;"></div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px;">
+        <div>
+          <h1 id="p-title" style="margin:0 0 8px 0; font-family:'Sora',sans-serif;">Property Title</h1>
+          <p id="p-loc" style="color:var(--muted); font-size:1.1rem;">Location</p>
+        </div>
+        <div id="p-price-range" style="text-align:right; font-size:1.4rem; font-weight:700; color:var(--accent);">KES --</div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('info')">Overview</button>
+        <button class="tab-btn" onclick="showTab('units')">Available Units</button>
+        <button class="tab-btn" onclick="showTab('plans')">Floor Plans</button>
+      </div>
+
+      <div id="tab-info" class="tab-sec">
+        <h3>Description</h3>
+        <p id="p-desc" style="line-height:1.6; margin-bottom:24px;">...</p>
+        <h3>Amenities</h3>
+        <div id="p-amen" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px;"></div>
+        <h3>House Rules</h3>
+        <p id="p-rules" style="line-height:1.6; color:var(--muted); padding:16px; background:#f8fafc; border-radius:12px;"></p>
+      </div>
+
+      <div id="tab-units" class="tab-sec" style="display:none;">
+        <div id="units-list"></div>
+      </div>
+
+      <div id="tab-plans" class="tab-sec" style="display:none;">
+        <div id="plans-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px;">
+          <p class="empty">No floor plans available.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="book-modal" class="modal">
+    <div class="modal-content">
+      <h2 id="modal-title">Book Unit</h2>
+      <p id="modal-subtitle" style="color:var(--muted); margin-bottom:20px;">...</p>
+      <textarea id="book-msg" placeholder="Message to landlord (e.g. When can I view?)" style="width:100%; padding:12px; height:100px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px;"></textarea>
+      <div style="display:flex; gap:12px;">
+        <button class="btn-secondary" onclick="closeModal()" style="flex:1; padding:12px; border-radius:12px;">Cancel</button>
+        <button class="btn-primary" id="confirm-book" style="flex:1; padding:12px; border-radius:12px;">Submit Interest</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/theme.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const propId = params.get('id');
+    let currentProp = null;
+    let selectedUnitType = null;
+    let selectedUnitId = null;
+
+    async function loadDetails() {
+      try {
+        console.log("Fetching property details for ID:", propId);
+        const data = await API.properties.getById(propId);
+        console.log("Property data received:", data);
+        
+        currentProp = data.property;
+        
+        if (!currentProp) {
+          throw new Error("Property not found in response");
+        }
+
+        document.getElementById('p-title').textContent = currentProp.title;
+        document.getElementById('p-loc').textContent = `${currentProp.area}, ${currentProp.city}`;
+        document.getElementById('p-desc').textContent = currentProp.description || 'No description provided.';
+        
+        // Amenities
+        const amenList = document.getElementById('p-amen');
+        if (currentProp.amenities?.length) {
+          amenList.innerHTML = currentProp.amenities.map(a => `<span style="background:#f1f5f9; padding:6px 12px; border-radius:20px; font-size:0.85rem; color:var(--muted);">${a.amenity_label || a}</span>`).join('');
+        } else { amenList.innerHTML = '<p style="color:var(--muted);">No amenities listed.</p>'; }
+
+        document.getElementById('p-rules').textContent = currentProp.house_rules || 'No specific rules.';
+        
+        // Show Admin Bar if Admin/Master Admin and property is pending
+        const user = API.getUser();
+        if ((user?.role === 'admin' || user?.role === 'master_admin') && currentProp.verification_status === 'pending') {
+          document.getElementById('admin-bar').style.display = 'flex';
+        } else {
+          document.getElementById('admin-bar').style.display = 'none';
+        }
+
+        // Set Main Image
+        const mainImg = document.getElementById('main-img');
+        const photos = currentProp.photos || [];
+        if (photos.length > 0) {
+          mainImg.src = photos[0].photo_url;
+        } else if (currentProp.primary_photo_url) {
+          mainImg.src = currentProp.primary_photo_url;
+        } else {
+          mainImg.src = 'wallpaper.jpg';
+        }
+
+        // Photo Gallery Navigation
+        const galleryNav = document.getElementById('gallery-nav');
+        if (photos.length > 1) {
+          galleryNav.innerHTML = photos.map((ph, idx) => `
+            <button onclick="document.getElementById('main-img').src='${ph.photo_url}'" style="width:12px; height:12px; border-radius:50%; border:2px solid white; background:${idx === 0 ? 'white' : 'transparent'}; cursor:pointer;"></button>
+          `).join('');
+        } else {
+          galleryNav.innerHTML = '';
+        }
+
+        // Units
+        const unitList = document.getElementById('units-list');
+        if (currentProp.unit_types?.length) {
+          const prices = currentProp.unit_types.map(u => u.price);
+          document.getElementById('p-price-range').textContent = `From KES ${Math.min(...prices).toLocaleString()}`;
+          
+          unitList.innerHTML = currentProp.unit_types.map(u => `
+            <div class="unit-card" style="flex-direction: column; align-items: stretch; gap: 16px;">
+              <div style="display: flex; gap: 20px; align-items: center;">
+                <img src="${u.photos?.[0]?.photo_url || 'wallpaper.jpg'}" style="width: 120px; height: 80px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border);">
+                <div style="flex: 1;">
+                  <strong style="font-size:1.1rem; color:var(--text);">${u.name}</strong><br>
+                  <small style="color:var(--muted);">${u.size_sqm} sqm • ${u.total_units} rooms available</small>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-weight:700; color:var(--accent); margin-bottom:8px;">KES ${Number(u.price).toLocaleString()}</div>
+                  <button class="btn-primary" onclick="openBookModal('${u.id}', '${u.name}', ${u.price}, '${u.units?.[0]?.id || ''}')" style="padding:6px 12px; font-size:0.8rem;">Book Now</button>
+                </div>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // Floor Plans
+        const planList = document.getElementById('plans-list');
+        const plans = currentProp.floor_plans || [];
+        if (plans.length) {
+          planList.innerHTML = plans.map(p => `
+            <div style="background:white; padding:10px; border-radius:16px; border:1px solid var(--border);">
+              <img src="${p.document_url}" style="width:100%; height:200px; object-fit:contain; border-radius:8px; cursor:pointer;" onclick="window.open(this.src)">
+              <p style="margin-top:10px; font-size:0.85rem; text-align:center; color:var(--muted);">Technical Floor Plan</p>
+            </div>
+          `).join('');
+        } else { planList.innerHTML = '<p class="empty">No floor plans uploaded for this property yet.</p>'; }
+
+        document.getElementById('prop-loading').style.display = 'none';
+        document.getElementById('prop-content').style.display = 'block';
+      } catch (e) {
+        console.error("Error in loadDetails:", e);
+        document.getElementById('prop-loading').innerHTML = `
+          <div style="text-align:center; padding:40px;">
+            <h2 style="color:#991b1b;">Error: Property not found</h2>
+            <p style="color:var(--muted); margin-bottom:20px;">${e.message}</p>
+            <button class="btn-primary" onclick="location.reload()">Retry</button>
+            <button class="btn-secondary" onclick="history.back()" style="margin-left:10px;">Go Back</button>
+          </div>
+        `;
+      }
+    }
+
+    function showTab(tab) {
+      document.querySelectorAll('.tab-sec').forEach(s => s.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + tab).style.display = 'block';
+      event.target.classList.add('active');
+    }
+
+    function openBookModal(id, name, price, unitId) {
+      selectedUnitType = id;
+      selectedUnitId = unitId;
+      document.getElementById('modal-title').textContent = `Book ${name}`;
+      document.getElementById('modal-subtitle').textContent = `Monthly Rent: KES ${price.toLocaleString()}`;
+      document.getElementById('book-modal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('book-modal').style.display = 'none'; }
+
+    async function approveProp() {
+      if(!confirm('Approve this listing?')) return;
+      try {
+        await API.admin.verifyProperty(propId, 'verified', 'Approved via details page');
+        alert('Property approved!');
+        location.reload();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function rejectProp() {
+      const notes = prompt("Reason for rejection:");
+      if(notes === null) return;
+      try {
+        await API.admin.verifyProperty(propId, 'rejected', notes || 'Rejected via details page');
+        alert('Property rejected.');
+        location.reload();
+      } catch (e) { alert(e.message); }
+    }
+
+    document.getElementById('confirm-book').onclick = async () => {
+      const user = API.getUser();
+      if (!user?.tenant_id) { alert('Please log in as a tenant to book.'); return; }
+      if (!selectedUnitType || !selectedUnitId) { alert('Please select a unit to book.'); return; }
+      
+      try {
+        await API.request('/interest/create', {
+          method: 'POST',
+          body: JSON.stringify({
+            property_id: propId,
+            unit_type_id: selectedUnitType,
+            unit_id: selectedUnitId,
+            tenant_message: document.getElementById('book-msg').value
+          })
+        });
+        alert('Booking interest sent! The landlord will contact you soon.');
+        closeModal();
+      } catch (e) { alert(e.message); }
+    };
+
+    loadDetails();
+  </script>
+</body>
+</html>

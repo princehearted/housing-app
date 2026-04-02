@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Habitra | Master Control Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .shell { padding: 24px; max-width: 1300px; margin: 0 auto; }
+    .grid { display: grid; grid-template-columns: 260px 1fr; gap: 32px; }
+    
+    .sidebar { display: flex; flex-direction: column; gap: 8px; }
+    .nav-link { 
+      padding: 14px 20px; border-radius: 12px; text-decoration: none; 
+      color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 12px; 
+      transition: 0.2s;
+    }
+    .nav-link:hover { background: rgba(0,0,0,0.05); color: var(--text); }
+    .nav-link.active { 
+      background: var(--accent); 
+      color: #ffffff !important; 
+      box-shadow: 0 4px 12px rgba(14, 165, 164, 0.2);
+    }
+    .nav-link.active * { color: #ffffff !important; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 32px; margin-bottom: 24px; }
+    
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-box { background: var(--surface); border: 1px solid var(--border); padding: 24px; border-radius: 20px; text-align: center; }
+    .stat-box h3 { font-size: 2rem; font-family: 'Sora', sans-serif; margin-bottom: 4px; color: var(--accent); }
+    .stat-box p { color: var(--muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+
+    .item-row { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); }
+    .item-row:last-child { border-bottom: none; }
+    .item-info h4 { font-family: 'Sora', sans-serif; margin-bottom: 4px; }
+    .item-info p { color: var(--muted); font-size: 0.85rem; }
+
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+    .badge.verified { background: #dcfce7; color: #166534; }
+    .badge.pending { background: #fef3c7; color: #92400e; }
+    .badge.rejected { background: #fee2e2; color: #991b1b; }
+
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-content { background: var(--surface); padding: 40px; border-radius: 32px; width: 100%; max-width: 500px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+    
+    .search-box { position: relative; margin-bottom: 24px; }
+    .search-box input { width: 100%; padding: 14px 20px; border-radius: 16px; border: 1px solid var(--border); font-size: 1rem; }
+    
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 16px; color: var(--muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); }
+    td { padding: 16px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-dot"></span><h1>Habitra Master</h1></div>
+    <div class="toplinks">
+      <span id="user-display" style="font-weight: 600; margin-right: 16px;">Master Admin</span>
+      <button onclick="logout()" class="btn-primary" style="padding: 8px 24px;">Logout</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="grid">
+      <aside class="sidebar">
+        <a href="#" class="nav-link active" onclick="showTab('dashboard')">Overview</a>
+        <a href="#" class="nav-link" onclick="showTab('verification')">Verification Queue</a>
+        <a href="#" class="nav-link" onclick="showTab('admins')" id="nav-admins">Admin Accounts</a>
+        <a href="#" class="nav-link" onclick="showTab('users')" id="nav-users">User Promotion</a>
+        <a href="settings.html" class="nav-link">Settings</a>
+      </aside>
+
+      <div class="content">
+        <!-- Dashboard Overview -->
+        <div id="tab-dashboard" class="tab-content">
+          <div class="stat-grid" id="dashboard-stats">
+            <div class="stat-box"><h3>-</h3><p>Tenants</p></div>
+            <div class="stat-box"><h3>-</h3><p>Landlords</p></div>
+            <div class="stat-box"><h3>-</h3><p>Properties</p></div>
+            <div class="stat-box"><h3>-</h3><p>Revenue</p></div>
+          </div>
+          
+          <div class="card">
+            <h2 style="margin-bottom: 20px;">System Health</h2>
+            <p style="color:var(--muted);">Database connection: <span style="color:green; font-weight:700;">ACTIVE</span></p>
+            <p style="color:var(--muted);">Supabase API: <span style="color:green; font-weight:700;">ONLINE</span></p>
+          </div>
+        </div>
+
+        <!-- Verification Queue -->
+        <div id="tab-verification" class="tab-content" style="display:none;">
+          <div class="card">
+            <h2>Verification & Property Management</h2>
+            <p style="color:var(--muted); margin-bottom:24px;">Review new submissions and manage existing platform content.</p>
+            <div id="queue-list">
+              <p class="empty">Checking for pending items...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Management -->
+        <div id="tab-admins" class="tab-content" style="display:none;">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+              <h2>System Administrators</h2>
+              <button class="btn-primary" onclick="openAdminModal()">+ Add New Admin</button>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="admins-list"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- User Promotion -->
+        <div id="tab-users" class="tab-content" style="display:none;">
+          <div class="card">
+            <h2>Promote User to Admin</h2>
+            <p style="color:var(--muted); margin-bottom:24px;">Grant admin privileges to existing platform users.</p>
+            <div class="search-box">
+              <input type="text" id="user-search-input" placeholder="Search user by name or email..." onkeyup="if(event.key==='Enter') searchUsers()">
+              <button class="btn-primary" onclick="searchUsers()" style="position:absolute; right:6px; top:6px; bottom:6px; padding:0 20px;">Search</button>
+            </div>
+            <div id="user-search-results"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Admin Modal -->
+  <div id="admin-modal" class="modal">
+    <div class="modal-content">
+      <h2 style="margin-bottom:24px; font-family:'Sora',sans-serif;">Create Admin</h2>
+      <form id="create-admin-form">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="adm-name" placeholder="John Doe" required>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="adm-email" placeholder="admin@habitra.ke" required>
+        </div>
+        <div class="form-group">
+          <label>Temporary Password</label>
+          <input type="password" id="adm-pass" placeholder="••••••••" required>
+        </div>
+        <div class="form-group">
+          <label>Access Level</label>
+          <select id="adm-role">
+            <option value="admin">Standard Admin</option>
+            <option value="master_admin">Master Admin</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:32px;">
+          <button type="button" class="btn-secondary" onclick="closeAdminModal()" style="flex:1;">Cancel</button>
+          <button type="submit" class="btn-primary" style="flex:1;">Create Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    const user = API.getUser();
+    const token = API.getToken();
+
+    if (!token || (user?.role !== 'master_admin' && user?.role !== 'admin')) {
+      window.location.href = 'login.html';
+    }
+
+    document.getElementById('user-display').textContent = user.full_name;
+    
+    // Hide master-only tabs for standard admins
+    if (user.role !== 'master_admin') {
+      document.getElementById('nav-admins').style.display = 'none';
+      document.getElementById('nav-users').style.display = 'none';
+    }
+
+    function logout() { API.clearToken(); API.clearUser(); window.location.href = 'login.html'; }
+
+    function showTab(id) {
+      document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+      document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+      
+      const target = document.getElementById('tab-' + id);
+      if (target) target.style.display = 'block';
+      
+      // Find and activate the link
+      document.querySelectorAll('.nav-link').forEach(a => {
+        if (a.getAttribute('onclick') && a.getAttribute('onclick').includes(`'${id}'`)) {
+          a.classList.add('active');
+        }
+      });
+      
+      if (id === 'verification') loadQueue();
+      if (id === 'admins') loadAdmins();
+      if (id === 'dashboard') loadDashboardStats();
+    }
+
+    async function loadDashboardStats() {
+      try {
+        const data = await API.admin.getQueue();
+        const items = data.queue || {};
+        const grid = document.getElementById('dashboard-stats');
+        
+        const tenantCount = items.pending_tenants?.length || 0;
+        const propCount = (items.pending_properties?.length || 0) + (items.verified_properties?.length || 0);
+        const docCount = items.pending_landlord_documents?.length || 0;
+
+        grid.innerHTML = `
+          <div class="stat-box"><h3>${tenantCount}</h3><p>Pending Tenants</p></div>
+          <div class="stat-box"><h3>${docCount}</h3><p>L/Lord Docs</p></div>
+          <div class="stat-box"><h3>${propCount}</h3><p>Total Properties</p></div>
+          <div class="stat-box"><h3>System</h3><p>Health OK</p></div>
+        `;
+      } catch (e) { console.error(e); }
+    }
+
+    async function loadQueue() {
+      const list = document.getElementById('queue-list');
+      list.innerHTML = '<p class="empty">Loading queue...</p>';
+      try {
+        const data = await API.admin.getQueue();
+        const items = data.queue;
+        let html = '';
+        
+        if (items.pending_tenants?.length) {
+          html += '<h4 style="margin:20px 0 12px 0; color:var(--accent);">Pending Tenants</h4>';
+          html += items.pending_tenants.map(t => `
+            <div class="item-row">
+              <div class="item-info">
+                <h4>${t.full_name}</h4>
+                <p>${t.email} • ${t.city}</p>
+              </div>
+              <button class="btn-primary btn-sm" onclick="verifyTenant('${t.tenant_id}')">Verify Account</button>
+            </div>
+          `).join('');
+        }
+
+        if (items.pending_landlord_documents?.length) {
+          html += '<h4 style="margin:20px 0 12px 0; color:var(--accent);">Pending Landlords</h4>';
+          html += items.pending_landlord_documents.map(l => `
+            <div class="item-row">
+              <div class="item-info">
+                <h4>${l.full_name}</h4>
+                <p>${l.email} • ${l.city}</p>
+              </div>
+              <button class="btn-primary btn-sm" onclick="window.location.href='landlord-docs.html?id=${l.id}'">Review Documents</button>
+            </div>
+          `).join('');
+        }
+
+        if (items.pending_properties?.length || items.verified_properties?.length) {
+          html += '<h4 style="margin:20px 0 12px 0; color:var(--accent);">Property Management</h4>';
+          
+          const allProps = [
+            ...(items.pending_properties || []).map(p => ({...p, status: 'pending'})),
+            ...(items.verified_properties || []).map(p => ({...p, status: 'verified'}))
+          ];
+
+          html += allProps.map(p => `
+            <div class="item-row">
+              <div class="item-info">
+                <h4>${p.title} <span class="badge ${p.status}">${p.status}</span></h4>
+                <p>${p.city} • ${p.property_type}</p>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="btn-outline btn-sm" onclick="window.location.href='property.html?id=${p.id}'">View Details</button>
+                ${p.status === 'pending' ? `
+                  <button class="btn-secondary btn-sm" onclick="rejectProperty('${p.id}')">Reject</button>
+                  <button class="btn-primary btn-sm" onclick="verifyProperty('${p.id}')">Approve</button>
+                ` : `
+                  ${user.role === 'master_admin' ? `
+                    ${p.status === 'verified' ? 
+                      `<button class="btn-secondary btn-sm" onclick="overrideProperty('${p.id}', false)">Master Unverify</button>` :
+                      `<button class="btn-primary btn-sm" onclick="overrideProperty('${p.id}', true)">Master Re-verify</button>`
+                    }
+                  ` : ''}
+                `}
+              </div>
+            </div>
+          `).join('');
+        }
+
+        try {
+          const delRes = await API.admin.getDeletionRequests();
+          if (delRes.requests?.length) {
+            html += '<h4 style="margin:40px 0 12px 0; color:#991b1b;">Account Deletion Requests</h4>';
+            html += delRes.requests.map(r => `
+              <div class="item-row" style="background:rgba(239, 68, 68, 0.05); border:1px solid #fed7d7; border-radius:12px; margin-bottom:8px;">
+                <div class="item-info">
+                  <h4 style="color:#991b1b;">${r.full_name} (${r.email})</h4>
+                  <p>Reason: ${r.deletion_request_notes || 'No notes'}</p>
+                  <p>Phone: ${r.phone}</p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn-outline btn-sm" onclick="alert('Admin will call ${r.full_name} at ${r.phone} to confirm deletion.')">Contact User</button>
+                  <button class="btn-danger btn-sm" onclick="approveDeletion('${r.id}')" style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:8px;">Approve Deletion</button>
+                </div>
+              </div>
+            `).join('');
+          }
+        } catch (e) { console.error("Error loading deletions", e); }
+
+        list.innerHTML = html || '<p class="empty">No pending verifications.</p>';
+      } catch (e) { list.innerHTML = '<p class="empty">Error loading queue.</p>'; }
+    }
+
+    async function verifyTenant(id) {
+      if(!confirm('Verify this tenant account?')) return;
+      try {
+        await API.admin.verifyTenant(id, 'verified');
+        loadQueue();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function verifyLandlord(id) {
+      if(!confirm('Verify this landlord account?')) return;
+      try {
+        await API.request(`/admin/verify-landlord/${id}`, {
+          method: 'POST',
+          body: JSON.stringify({ status: 'verified' })
+        });
+        loadQueue();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function verifyProperty(id) {
+      if(!confirm('Approve this property listing?')) return;
+      try {
+        await API.admin.verifyProperty(id, 'verified', 'Approved by Admin');
+        loadQueue();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function rejectProperty(id) {
+      const notes = prompt("Reason for rejection:");
+      if(notes === null) return;
+      try {
+        await API.admin.verifyProperty(id, 'rejected', notes || 'Rejected by Admin');
+        loadQueue();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function overrideProperty(id, status) {
+      const action = status ? 'verify' : 'unverify';
+      if(!confirm(`MASTER ACTION: Are you sure you want to ${action} this property?`)) return;
+      try {
+        await API.admin.masterOverrideProperty(id, status ? 'verified' : 'rejected', `Master Override: ${action}`);
+        alert(`Property ${action}ed successfully!`);
+        loadQueue();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function approveDeletion(id) {
+      if(!confirm('Are you absolutely sure you want to PERMANENTLY delete this account? This cannot be undone.')) return;
+      try {
+        await API.admin.approveDeletion(id);
+        alert('Account deleted successfully.');
+        loadQueue();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function loadAdmins() {
+      const list = document.getElementById('admins-list');
+      try {
+        const data = await API.admin.getAdmins();
+        if (!data.admins?.length) {
+          list.innerHTML = '<tr><td colspan="5" style="text-align:center;">No other admins found.</td></tr>';
+          return;
+        }
+        list.innerHTML = data.admins.map(a => `
+          <tr>
+            <td><strong>${a.full_name}</strong></td>
+            <td>${a.email}</td>
+            <td><span class="badge ${a.role}">${a.role.replace('_', ' ')}</span></td>
+            <td><span class="badge ${a.is_active ? 'verified' : 'rejected'}">${a.is_active ? 'Active' : 'Suspended'}</span></td>
+            <td>
+              <button class="btn-outline btn-sm" onclick="toggleAdmin('${a.id}')">${a.is_active ? 'Suspend' : 'Activate'}</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) { list.innerHTML = '<tr><td colspan="5" style="text-align:center;">Error loading admins</td></tr>'; }
+    }
+
+    async function searchUsers() {
+      const q = document.getElementById('user-search-input').value;
+      const resDiv = document.getElementById('user-search-results');
+      resDiv.innerHTML = '<p>Searching users...</p>';
+      try {
+        const data = await API.admin.searchUsers(q);
+        resDiv.innerHTML = data.users.length ? data.users.map(u => `
+          <div class="item-row">
+            <div class="item-info">
+              <h4>${u.full_name}</h4>
+              <p>${u.email} • ${u.city} • Current: ${u.admin_user_id ? 'Admin' : (u.landlord_id ? 'Landlord' : 'Tenant')}</p>
+            </div>
+            ${!u.admin_user_id ? `<button class="btn-primary btn-sm" onclick="promoteUser('${u.id}')">Promote to Admin</button>` : '<span class="badge verified">Staff Member</span>'}
+          </div>
+        `).join('') : '<p class="empty">No matching users found.</p>';
+      } catch (e) { resDiv.innerHTML = '<p class="empty">Error searching users.</p>'; }
+    }
+
+    async function promoteUser(id) {
+      const role = prompt("Access Level (admin/master_admin):", "admin");
+      if(!role) return;
+      try {
+        await API.admin.promoteToAdmin(id, role);
+        alert('User promoted successfully!');
+        searchUsers();
+      } catch (e) { alert(e.message); }
+    }
+
+    function openAdminModal() { document.getElementById('admin-modal').style.display = 'flex'; }
+    function closeAdminModal() { document.getElementById('admin-modal').style.display = 'none'; }
+
+    document.getElementById('create-admin-form').onsubmit = async (e) => {
+      e.preventDefault();
+      try {
+        await API.admin.createAdmin({
+          full_name: document.getElementById('adm-name').value,
+          email: document.getElementById('adm-email').value,
+          password: document.getElementById('adm-pass').value,
+          role: document.getElementById('adm-role').value
+        });
+        alert('Admin created!');
+        closeAdminModal();
+        loadAdmins();
+      } catch (e) { alert(e.message); }
+    }
+
+    loadDashboardStats();
+  </script>
+</body>
+</html>

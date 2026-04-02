@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Habitra | Listings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="backdrop"></div>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <h1>Habitra</h1>
+      </div>
+      <nav class="toplinks">
+        <a href="./index.html">Back to Categories</a>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="details-wrap">
+        <a class="back-link" href="./index.html">&larr; Back to categories</a>
+        <h2 id="list-title">Listings</h2>
+        <p id="list-subtitle" class="subtext"></p>
+
+        <div class="search-panel">
+          <input id="list-search" type="text" placeholder="Filter by city or area" />
+          <button id="list-search-btn" type="button">Search</button>
+        </div>
+      </section>
+
+      <section class="listings-wrap">
+        <div class="listings-header">
+          <h3>Available Homes</h3>
+          <span id="list-count" class="pill">0 listings</span>
+        </div>
+        <div id="list-grid" class="property-grid"></div>
+      </section>
+    </main>
+
+    <script src="./js/api.js"></script>
+    <script type="module" src="./listings.js"></script>
+  </body>
+</html>

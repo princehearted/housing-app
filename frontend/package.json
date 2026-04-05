@@ -1,6 +1,1 @@
-{
-  "name": "housing-app-frontend",
-  "version": "1.0.0",
-  "description": "Habitra Frontend",
-  "private": true
-}
+{ "name":"housing-app-frontend","private":true,"scripts":{ "build":"node ./scripts/copy-build.js","vercel-build":"npm run build" } }

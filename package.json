@@ -1,8 +1,9 @@
 {
-"name": "housing-app-frontend",
-"version": "1.0.0",
-"private": true,
-"scripts": {
-"build": "powershell -NoProfile -Command "& { Remove-Item -Recurse -Force build -ErrorAction SilentlyContinue; New-Item -ItemType Directory build | Out-Null; Get-ChildItem -Path . -Exclude node_modules,build | ForEach-Object { Copy-Item -Path $_.FullName -Destination (Join-Path (Get-Location) 'build') -Recurse -Force } }""
-}
+  "name": "housing-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "echo \"No root start script\"",
+    "build": "echo \"No root build script\""
+  }
 }

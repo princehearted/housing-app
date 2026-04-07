@@ -1,10 +1,10 @@
-import React from 'react';
+import React from "react";
 
 function App() {
   return (
-    <div>
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
       <h1>Housing App Frontend</h1>
-      <p>Your React app is running!</p>
+      <p>Your React frontend is running successfully!</p>
     </div>
   );
 }
